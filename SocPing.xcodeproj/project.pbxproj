@@ -37,6 +37,11 @@
 		6CB46755259593BD00861A05 /* SocPingTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB46754259593BD00861A05 /* SocPingTabView.swift */; };
 		6CB46758259593D100861A05 /* SocPingTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB46757259593D100861A05 /* SocPingTracer.swift */; };
 		6CB4675E2595981800861A05 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6CB467602595981800861A05 /* Localizable.strings */; };
+		6CB467662595A36700861A05 /* PrivacyPolicy.html in Resources */ = {isa = PBXBuildFile; fileRef = 6CB467652595A36700861A05 /* PrivacyPolicy.html */; };
+		6CB467692595A3EB00861A05 /* PrivacyPolicy_ja.html in Resources */ = {isa = PBXBuildFile; fileRef = 6CB467682595A3EB00861A05 /* PrivacyPolicy_ja.html */; };
+		6CB4676C2595A40500861A05 /* style.css in Resources */ = {isa = PBXBuildFile; fileRef = 6CB4676B2595A40500861A05 /* style.css */; };
+		6CB4676F2595A42800861A05 /* TermsOfService_ja.html in Resources */ = {isa = PBXBuildFile; fileRef = 6CB4676E2595A42800861A05 /* TermsOfService_ja.html */; };
+		6CB467722595A45200861A05 /* TermsOfService.html in Resources */ = {isa = PBXBuildFile; fileRef = 6CB467712595A45200861A05 /* TermsOfService.html */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -74,6 +79,11 @@
 		6CB46757259593D100861A05 /* SocPingTracer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocPingTracer.swift; sourceTree = "<group>"; };
 		6CB4675F2595981800861A05 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		6CB467622595985700861A05 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		6CB467652595A36700861A05 /* PrivacyPolicy.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = PrivacyPolicy.html; sourceTree = "<group>"; };
+		6CB467682595A3EB00861A05 /* PrivacyPolicy_ja.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = PrivacyPolicy_ja.html; sourceTree = "<group>"; };
+		6CB4676B2595A40500861A05 /* style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = style.css; sourceTree = "<group>"; };
+		6CB4676E2595A42800861A05 /* TermsOfService_ja.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = TermsOfService_ja.html; sourceTree = "<group>"; };
+		6CB467712595A45200861A05 /* TermsOfService.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = TermsOfService.html; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +100,7 @@
 		6C4F5CCC25958F7D007E43A6 = {
 			isa = PBXGroup;
 			children = (
+				6CB467642595A2D700861A05 /* docs */,
 				6C4F5CD725958F7D007E43A6 /* SocPing */,
 				6C4F5CD625958F7D007E43A6 /* Products */,
 			);
@@ -108,21 +119,21 @@
 			children = (
 				6C4F5CD825958F7D007E43A6 /* AppDelegate.swift */,
 				6C4F5CDA25958F7D007E43A6 /* SceneDelegate.swift */,
-				6C4F5CDC25958F7D007E43A6 /* ContentView.swift */,
-				6CB467302595929200861A05 /* SocPingAddressManager.swift */,
+				6CB46751259593A700861A05 /* SocPingSharedObject.swift */,
+				6CB4673C259592F700861A05 /* SocPingInterface.swift */,
 				6CB46733259592AE00861A05 /* SocPingEcho.swift */,
 				6CB46736259592C400861A05 /* SocPingError.swift */,
+				6CB4674E2595938A00861A05 /* SocPingScreen.swift */,
+				6C4F5CDC25958F7D007E43A6 /* ContentView.swift */,
+				6CB46754259593BD00861A05 /* SocPingTabView.swift */,
+				6CB467302595929200861A05 /* SocPingAddressManager.swift */,
 				6CB46739259592DA00861A05 /* SocPingGatewayManager.swift */,
-				6CB4673C259592F700861A05 /* SocPingInterface.swift */,
 				6CB4673F2595931100861A05 /* SocPingInterfaceManager.swift */,
 				6CB467422595932C00861A05 /* SocPingList.swift */,
-				6CB467452595933F00861A05 /* SocPingMenu.swift */,
 				6CB467482595935200861A05 /* SocPingOnePinger.swift */,
 				6CB4674B2595936600861A05 /* SocPingPinger.swift */,
-				6CB4674E2595938A00861A05 /* SocPingScreen.swift */,
-				6CB46751259593A700861A05 /* SocPingSharedObject.swift */,
-				6CB46754259593BD00861A05 /* SocPingTabView.swift */,
 				6CB46757259593D100861A05 /* SocPingTracer.swift */,
+				6CB467452595933F00861A05 /* SocPingMenu.swift */,
 				6CB4672B2595925300861A05 /* SocPing-Bridging-Header.h */,
 				6C4F5CED2595908B007E43A6 /* LibSoc */,
 				6C4F5CDE25958F7E007E43A6 /* Assets.xcassets */,
@@ -156,6 +167,18 @@
 				6C4F5D062595916B007E43A6 /* UInt8+Extension.swift */,
 			);
 			path = LibSoc;
+			sourceTree = "<group>";
+		};
+		6CB467642595A2D700861A05 /* docs */ = {
+			isa = PBXGroup;
+			children = (
+				6CB467712595A45200861A05 /* TermsOfService.html */,
+				6CB4676E2595A42800861A05 /* TermsOfService_ja.html */,
+				6CB467652595A36700861A05 /* PrivacyPolicy.html */,
+				6CB467682595A3EB00861A05 /* PrivacyPolicy_ja.html */,
+				6CB4676B2595A40500861A05 /* style.css */,
+			);
+			path = docs;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -219,7 +242,12 @@
 			files = (
 				6C4F5CE525958F7E007E43A6 /* LaunchScreen.storyboard in Resources */,
 				6CB4675E2595981800861A05 /* Localizable.strings in Resources */,
+				6CB4676C2595A40500861A05 /* style.css in Resources */,
+				6CB467692595A3EB00861A05 /* PrivacyPolicy_ja.html in Resources */,
+				6CB4676F2595A42800861A05 /* TermsOfService_ja.html in Resources */,
+				6CB467662595A36700861A05 /* PrivacyPolicy.html in Resources */,
 				6C4F5CE225958F7E007E43A6 /* Preview Assets.xcassets in Resources */,
+				6CB467722595A45200861A05 /* TermsOfService.html in Resources */,
 				6C4F5CDF25958F7E007E43A6 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

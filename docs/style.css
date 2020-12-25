@@ -1,0 +1,11 @@
+body{font-size:24px; font-family:'Lucida Grande','Hiragino Kaku Gothic ProN','Meiryo','sans-serif','メイリオ','ヒラギノ角ゴ ProN W3';}
+h1{font-size:24px; font-weight:bold; border-left:solid 10px #007aff; background:#f1f8ff; margin-bottom:12px; padding:0.6em;}
+h2{font-size:24px; font-weight:bold; border-left:solid 10px #8e8e93; background:#eaeaef; margin-bottom:12px; padding:0.3em; padding-left:0.6em;}
+table{border-collapse:collapse;}
+th{border:solid 1px; padding: 10px; white-space:nowrap; background:#eaeaef;}
+td{border:solid 1px; padding: 10px;}
+td img{height: 36px;}
+table tr td:nth-of-type(1){border:solid 1px; padding: 10px; white-space:nowrap;}
+ol{padding-left:3.0em;}
+li{font-weight:none;}
+a{color:#007aff; text-decoration:none;}

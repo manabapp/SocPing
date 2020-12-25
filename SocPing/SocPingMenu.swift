@@ -128,7 +128,7 @@ struct SocPingMenu: View {
                         self.isPopAlert = true
                     }
                 }) {
-                    CommonRaw(name:"Privacy Policy", image:"doc.text", detail:"Description_Privacy_Policy")
+                    CommonRaw(name:"Privacy Policy", image:"lock.shield", detail:"Description_Privacy_Policy")
                 }
                 .alert(isPresented: self.$isPopAlert) {
                     Alert(title: Text(self.alertTitle))
