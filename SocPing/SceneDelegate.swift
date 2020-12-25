@@ -2,14 +2,14 @@
 //  SceneDelegate.swift
 //  SocPing
 //
-//  Created by Hirose Manabu on 2020/12/25.
+//  Created by Hirose Manabu on 2021/01/01.
 //
 
 import UIKit
 import SwiftUI
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
-
+    @ObservedObject(initialValue: SocPingSharedObject()) var object: SocPingSharedObject  // ADD 2021/01/01 manabapp
     var window: UIWindow?
 
 
@@ -20,6 +20,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // Create the SwiftUI view that provides the window contents.
         let contentView = ContentView()
+            .environmentObject(object)  // ADD 2021/01/01 manabapp
 
         // Use a UIHostingController as window root view controller.
         if let windowScene = scene as? UIWindowScene {
@@ -58,6 +59,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // to restore the scene back to its current state.
     }
 
-
+    // ADD 2021/01/01 manabapp
+    func windowScene(_ windowScene: UIWindowScene, didUpdate previousCoordinateSpace: UICoordinateSpace, interfaceOrientation previousInterfaceOrientation: UIInterfaceOrientation, traitCollection previousTraitCollection: UITraitCollection) {
+        withAnimation {
+            object.orientation = windowScene.interfaceOrientation
+        }
+    }
 }
 

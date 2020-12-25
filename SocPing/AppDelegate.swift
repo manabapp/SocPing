@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  SocPing
 //
-//  Created by Hirose Manabu on 2020/12/25.
+//  Created by Hirose Manabu on 2021/01/01.
 //
 
 import UIKit
