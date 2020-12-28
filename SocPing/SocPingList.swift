@@ -12,14 +12,20 @@ struct SocPingList: View {
     var actionType: Int
     @State var limitedBroadcast = SocAddress(family: AF_INET, addr: "255.255.255.255", port: 0, hostName: "broadcasthost", isBroadcast: true)
     
-    static let actionTypeOnePing: Int = 0
-    static let actionTypePing: Int = 1
-    static let actionTypeTraceroute: Int = 2
-    static let actionNames = ["One Ping", "Ping", "Traceroute"]
-    
     var body: some View {
         List {
-            if actionType == SocPingList.actionTypeOnePing {
+            if actionType == SocPingEcho.actionTypePing {
+                Section(header: Text("Header_MULTICAST_ADDRESS")) {
+                    ForEach(0 ..< self.object.addresses.count, id: \.self) { i in
+                        if self.object.addresses[i].isMulticast {
+                            NavigationLink(destination: SocPingPinger(address: self.object.addresses[i])) {
+                                AddressRaw(address: self.$object.addresses[i])
+                            }
+                        }
+                    }
+                }
+            }
+            if actionType == SocPingEcho.actionTypeOnePing {
                 Section(header: Text("Header_LOCAL_ADDRESS")) {
                     ForEach(0 ..< object.interfaces.count, id: \.self) { i in
                         if self.object.interfaces[i].isActive {
@@ -53,32 +59,20 @@ struct SocPingList: View {
                     }
                 }
             }
-            if actionType == SocPingList.actionTypePing {
-                Section(header: Text("Header_MULTICAST_ADDRESS")) {
-                    ForEach(0 ..< self.object.addresses.count, id: \.self) { i in
-                        if self.object.addresses[i].isMulticast {
-                            NavigationLink(destination: SocPingPinger(address: self.object.addresses[i])) {
-                                AddressRaw(address: self.$object.addresses[i])
-                            }
-                        }
-                    }
-                }
-            }
             Section(header: Text("Header_UNICAST_ADDRESS")) {
                 ForEach(0 ..< self.object.addresses.count, id: \.self) { i in
                     if !self.object.addresses[i].isMulticast && !self.object.addresses[i].isAny {
-                        if actionType == SocPingList.actionTypeOnePing {
-                            NavigationLink(destination: SocPingOnePinger(address: self.object.addresses[i])) {
-                                AddressRaw(address: self.$object.addresses[i])
-                            }
-                        }
-                        else if actionType == SocPingList.actionTypePing {
+                        switch actionType {
+                        case SocPingEcho.actionTypePing:
                             NavigationLink(destination: SocPingPinger(address: self.object.addresses[i])) {
                                 AddressRaw(address: self.$object.addresses[i])
                             }
-                        }
-                        else {
+                        case SocPingEcho.actionTypeTraceroute:
                             NavigationLink(destination: SocPingTracer(address: self.object.addresses[i])) {
+                                AddressRaw(address: self.$object.addresses[i])
+                            }
+                        default:  // SocPingEcho.actionTypeOnePing:
+                            NavigationLink(destination: SocPingOnePinger(address: self.object.addresses[i])) {
                                 AddressRaw(address: self.$object.addresses[i])
                             }
                         }
@@ -87,7 +81,6 @@ struct SocPingList: View {
             }
         }
         .listStyle(PlainListStyle())
-        .navigationBarTitle(SocPingList.actionNames[actionType], displayMode: .inline)
     }
 }
 

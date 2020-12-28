@@ -43,7 +43,7 @@ struct SocPingPinger: View {
     private func chkDup(_ i: Int) -> Bool { return dupTable[(i) >> 3] & UInt8(1 << ((i) & 0x07)) > 0 }
     
     var isInProgress: Bool {
-        return self.object.isProcessing && self.object.runningActionType == SocPingList.actionTypePing
+        return self.object.isProcessing && self.object.runningActionType == SocPingEcho.actionTypePing
     }
     
     var body: some View {
@@ -65,7 +65,7 @@ struct SocPingPinger: View {
                     }
                     if self.object.isProcessing {
                         self.alertTitle = NSLocalizedString("Message_Multiple_actions_not_possible", comment: "")
-                        self.alertMessage = SocPingList.actionNames[self.object.runningActionType] + " in progress"
+                        self.alertMessage = SocPingEcho.actionNames[self.object.runningActionType] + " in progress"
                         self.isPopAlert = true
                         return
                     }
@@ -101,7 +101,7 @@ struct SocPingPinger: View {
                     }
                     
                     self.object.isProcessing = true
-                    self.object.runningActionType = SocPingList.actionTypePing
+                    self.object.runningActionType = SocPingEcho.actionTypePing
                     self.isInterrupted = false
                     
                     DispatchQueue.global().async {

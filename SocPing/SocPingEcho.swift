@@ -36,6 +36,10 @@ struct SocPingEcho {
     var payloadIncr: Int = 0                  // increment size of payload in sweeping mode
     var usePayloadTv: Bool = false            // timeval is set to head of payload
     
+    static let actionTypePing: Int = 0
+    static let actionTypeTraceroute: Int = 1
+    static let actionTypeOnePing: Int = 2
+    static let actionNames = ["Ping", "Traceroute", "One Ping"]
     static let tvLen = 8                      // length of structure timeval (sec:4 + usec:4)
     static let valueTypeDefault: Int = 0      // PID(ICMP id), 0(ICMP seq), 49152(UDP port)
     static let valueTypeUserSet: Int = 1      // Sets by User
@@ -165,7 +169,7 @@ struct SocPingEcho {
                 self.address.port = UInt16.random(in: UInt16(SocPingEcho.portRangeStart) ... .max)
             }
             else {
-                let number: Int = (self.baseNumber + self.counter) % (Int(UInt16.max) - self.baseNumber + 1)
+                let number: Int = self.counter % (Int(UInt16.max) - self.baseNumber + 1)
                 self.address.port = UInt16(self.baseNumber + number)
             }
         }

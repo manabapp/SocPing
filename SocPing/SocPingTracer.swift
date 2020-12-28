@@ -44,7 +44,7 @@ struct SocPingTracer: View {
     ]
     
     var isInProgress: Bool {
-        return self.object.isProcessing && self.object.runningActionType == SocPingList.actionTypeTraceroute
+        return self.object.isProcessing && self.object.runningActionType == SocPingEcho.actionTypeTraceroute
     }
     
     var body: some View {
@@ -63,7 +63,7 @@ struct SocPingTracer: View {
                     }
                     if self.object.isProcessing {
                         self.alertTitle = NSLocalizedString("Message_Multiple_actions_not_possible", comment: "")
-                        self.alertMessage = SocPingList.actionNames[self.object.runningActionType] + " in progress"
+                        self.alertMessage = SocPingEcho.actionNames[self.object.runningActionType] + " in progress"
                         self.isPopAlert = true
                         return
                     }
@@ -97,9 +97,9 @@ struct SocPingTracer: View {
                         self.isPopAlert = true
                         return
                     }
-
+                    
                     self.object.isProcessing = true
-                    self.object.runningActionType = SocPingList.actionTypeTraceroute
+                    self.object.runningActionType = SocPingEcho.actionTypeTraceroute
                     self.isInterrupted = false
                     
                     DispatchQueue.global().async {

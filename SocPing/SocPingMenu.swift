@@ -45,15 +45,6 @@ struct SocPingMenu: View {
                 NavigationLink(destination: AppSettings()) {
                     CommonRaw(name:"App Settings", image:"wrench", detail:"Description_App_Settings")
                 }
-                NavigationLink(destination: OnePingSettings(icmpId: object.oneSettingIcmpId,
-                                                           icmpSeq: object.oneSettingIcmpSeq,
-                                                           udpPort: object.oneSettingUdpPort,
-                                                           payloadLen: object.oneSettingPayloadSize,
-                                                           waittime: object.oneSettingWaittime,
-                                                           ttl: object.oneSettingTtl,
-                                                           tos: object.oneSettingTos)) {
-                    CommonRaw(name:"One Ping Settings", image:"1.circle", detail:"Description_One_Ping_Settings")
-                }
                 NavigationLink(destination: PingSettings(payloadLen: object.pingSettingPayloadSize,
                                                         interval: object.pingSettingInterval,
                                                         echoes: object.pingSettingEchoes,
@@ -71,6 +62,15 @@ struct SocPingMenu: View {
                                                               ttlMax: object.traceSettingTtlMax,
                                                               tos: object.traceSettingTos)) {
                     CommonRaw(name:"Traceroute Settings", image:"arrow.triangle.swap", detail:"Description_Traceroute_Settings")
+                }
+                NavigationLink(destination: OnePingSettings(icmpId: object.oneSettingIcmpId,
+                                                           icmpSeq: object.oneSettingIcmpSeq,
+                                                           udpPort: object.oneSettingUdpPort,
+                                                           payloadLen: object.oneSettingPayloadSize,
+                                                           waittime: object.oneSettingWaittime,
+                                                           ttl: object.oneSettingTtl,
+                                                           tos: object.oneSettingTos)) {
+                    CommonRaw(name:"One Ping Settings", image:"1.circle", detail:"Description_One_Ping_Settings")
                 }
             }
             Section(header: Text("Header_LOG")) {
@@ -128,7 +128,7 @@ struct SocPingMenu: View {
                         self.isPopAlert = true
                     }
                 }) {
-                    CommonRaw(name:"Privacy Policy", image:"lock.shield", detail:"Description_Privacy_Policy")
+                    CommonRaw(name:"Privacy Policy", image:"hand.raised.fill", detail:"Description_Privacy_Policy")
                 }
                 .alert(isPresented: self.$isPopAlert) {
                     Alert(title: Text(self.alertTitle))
@@ -214,601 +214,6 @@ fileprivate struct AppSettings: View {
         }
         .listStyle(GroupedListStyle())
         .navigationBarTitle("App Settings", displayMode: .inline)
-    }
-}
-
-fileprivate struct OnePingSettings: View {
-    @EnvironmentObject var object: SocPingSharedObject
-    @State private var stringIcmpId: String
-    @State private var stringIcmpSeq: String
-    @State private var stringUdpPort: String
-    @State private var stringPayloadLen: String
-    @State private var stringWaittime: String
-    @State private var stringTtl: String
-    @State private var stringTos: String
-    @State private var isSetIcmpId: Bool = false
-    @State private var isSetIcmpSeq: Bool = false
-    @State private var isSetUdpPort: Bool = false
-    @State private var isSetPayloadLen: Bool = false
-    @State private var isSetWaittime: Bool = false
-    @State private var isSetTtl: Bool = false
-    @State private var isSetTos: Bool = false
-    @State private var alertTitle: String = "Unexpected error."
-    @State private var isPopAlert: Bool = false
-    
-    init(icmpId: Int,
-         icmpSeq: Int,
-         udpPort: Int,
-         payloadLen: Int,
-         waittime: Int,
-         ttl: Int,
-         tos: Int) {
-        _stringIcmpId = State(initialValue: String(icmpId))
-        _stringIcmpSeq = State(initialValue: String(icmpSeq))
-        _stringUdpPort = State(initialValue: String(udpPort))
-        _stringPayloadLen = State(initialValue: String(payloadLen))
-        _stringWaittime = State(initialValue: String(format: "%.3f", Double(waittime) / 1000.0))
-        _stringTtl = State(initialValue: String(ttl))
-        _stringTos = State(initialValue: String(tos))
-    }
-    
-    var body: some View {
-        List {
-            Group {
-                Section(header: Text("VERBOSE").font(.system(size: 16, weight: .semibold)),
-                        footer: object.appSettingDescription ? Text("Footer_one_VERBOSE").font(.system(size: 12)) : nil) {
-                    Toggle(isOn: self.$object.oneSettingVerbose) {
-                        Text("Label_Enabled")
-                    }
-                }
-                Section(header: Text("PROTOCOL").font(.system(size: 16, weight: .semibold)),
-                        footer: object.appSettingDescription ? Text("Footer_one_PROTOCOL").font(.system(size: 12)) : nil) {
-                    HStack {
-                        Text("Label_IP_protocol")
-                            .frame(width: 100, alignment: .leading)
-                        Picker("", selection: self.$object.oneSettingIpProto) {
-                            Text("Label_ICMP").tag(IPPROTO_ICMP)
-                            Text("Label_UDP").tag(IPPROTO_UDP)
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
-                    }
-                    if object.oneSettingIpProto == IPPROTO_ICMP {
-                        HStack {
-                            Text("Label_ID_type")
-                                .frame(width: 100, alignment: .leading)
-                            Picker("", selection: self.$object.oneSettingIdType) {
-                                Text("Label_Default").tag(SocPingEcho.valueTypeDefault)
-                                Text("Label_Users_id").tag(SocPingEcho.valueTypeUserSet)
-                                Text("Label_Random").tag(SocPingEcho.valueTypeRandom)
-                            }
-                            .pickerStyle(SegmentedPickerStyle())
-                        }
-                        if object.oneSettingIdType == SocPingEcho.valueTypeDefault {
-                            HStack {
-                                Text("Label_ID_value")
-                                    .frame(width: 100, alignment: .leading)
-                                Spacer()
-                                Text("Label_Apps_PID")
-                            }
-                        }
-                        else if object.oneSettingIdType == SocPingEcho.valueTypeUserSet {
-                            if !self.isSetIcmpId {
-                                HStack {
-                                    Text("Label_ID_value")
-                                        .frame(width: 100, alignment: .leading)
-                                    TextField("0 - \(UInt16.max)", text: $stringIcmpId)
-                                        .keyboardType(.numberPad)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                                        .frame(maxWidth: .infinity)
-                                    Button(action: {
-                                        SocLogger.debug("OnePingSetting: Button: icmpId OK")
-                                        do {
-                                            object.oneSettingIcmpId = try self.getInt(stringValue: self.stringIcmpId, min: 0, max: Int(UInt16.max))
-                                            self.isSetIcmpId = true
-                                        }
-                                        catch let error as SocPingError {
-                                            self.alertTitle = error.message
-                                            self.isPopAlert = true
-                                        }
-                                        catch {
-                                            SocLogger.error("OnePingSetting: \(error)")
-                                            assertionFailure("OnePingSetting: \(error)")
-                                            self.isPopAlert = true
-                                        }
-                                    }) {
-                                        Text("Button_OK")
-                                            .foregroundColor(Color.init(UIColor.systemBlue))
-                                    }
-                                }
-                                .alert(isPresented: self.$isPopAlert) {
-                                    Alert(title: Text(self.alertTitle))
-                                }
-                            }
-                            else {
-                                HStack {
-                                    Text("Label_ID_value")
-                                        .frame(width: 100, alignment: .leading)
-                                    Spacer()
-                                    Text("\(object.oneSettingIcmpId)")
-                                }
-                            }
-                        }
-                        else {  // SocPingEcho.idTypeRandom
-                            HStack {
-                                Text("Label_ID_value")
-                                    .frame(width: 100, alignment: .leading)
-                                Spacer()
-                                Text("0 - \(UInt16.max)")
-                            }
-                        }
-                        HStack {
-                            Text("Label_SEQ_type")
-                                .frame(width: 100, alignment: .leading)
-                            Picker("", selection: self.$object.oneSettingSeqType) {
-                                Text("Label_Default").tag(SocPingEcho.valueTypeDefault)
-                                Text("Label_Users_seq").tag(SocPingEcho.valueTypeUserSet)
-                                Text("Label_Random").tag(SocPingEcho.valueTypeRandom)
-                            }
-                            .pickerStyle(SegmentedPickerStyle())
-                        }
-                        if object.oneSettingSeqType == SocPingEcho.valueTypeDefault {
-                            HStack {
-                                Text("Label_SEQ_value")
-                                    .frame(width: 100, alignment: .leading)
-                                Spacer()
-                                Text("0")
-                            }
-                        }
-                        else if object.oneSettingSeqType == SocPingEcho.valueTypeUserSet {
-                            if !self.isSetIcmpSeq {
-                                HStack {
-                                    Text("Label_SEQ_value")
-                                        .frame(width: 100, alignment: .leading)
-                                    TextField("0 - \(UInt16.max)", text: $stringIcmpSeq)
-                                        .keyboardType(.numberPad)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                                        .frame(maxWidth: .infinity)
-                                    Button(action: {
-                                        SocLogger.debug("OnePingSetting: Button: icmpSeq OK")
-                                        do {
-                                            object.oneSettingIcmpSeq = try self.getInt(stringValue: self.stringIcmpSeq, min: 0, max: Int(UInt16.max))
-                                            self.isSetIcmpSeq = true
-                                        }
-                                        catch let error as SocPingError {
-                                            self.alertTitle = error.message
-                                            self.isPopAlert = true
-                                        }
-                                        catch {
-                                            SocLogger.error("OnePingSetting: \(error)")
-                                            assertionFailure("OnePingSetting: \(error)")
-                                            self.isPopAlert = true
-                                        }
-                                    }) {
-                                        Text("Button_OK")
-                                            .foregroundColor(Color.init(UIColor.systemBlue))
-                                    }
-                                }
-                                .alert(isPresented: self.$isPopAlert) {
-                                    Alert(title: Text(self.alertTitle))
-                                }
-                            }
-                            else {
-                                HStack {
-                                    Text("Label_SEQ_value")
-                                        .frame(width: 100, alignment: .leading)
-                                    Spacer()
-                                    Text("\(object.oneSettingIcmpSeq)")
-                                }
-                            }
-                        }
-                        else {  // SocPingEcho.idTypeRandom
-                            HStack {
-                                Text("Label_SEQ_value")
-                                    .frame(width: 100, alignment: .leading)
-                                Spacer()
-                                Text("0 - \(UInt16.max)")
-                            }
-                        }
-                    }
-                    else {  // UDP
-                        HStack {
-                            Text("Label_Port_type")
-                                .frame(width: 100, alignment: .leading)
-                            Picker("", selection: self.$object.oneSettingPortType) {
-                                Text("Label_Default").tag(SocPingEcho.valueTypeDefault)
-                                Text("Label_Users_port").tag(SocPingEcho.valueTypeUserSet)
-                                Text("Label_Random").tag(SocPingEcho.valueTypeRandom)
-                            }
-                            .pickerStyle(SegmentedPickerStyle())
-                        }
-                        if object.oneSettingPortType == SocPingEcho.valueTypeDefault {
-                            HStack {
-                                Text("Label_Port_number")
-                                    .frame(width: 100, alignment: .leading)
-                                Spacer()
-                                Text("\(SocPingEcho.pingPortDefault)")
-                            }
-                        }
-                        else if object.oneSettingPortType == SocPingEcho.valueTypeUserSet {
-                            if !self.isSetUdpPort {
-                                HStack {
-                                    Text("Label_Port_number")
-                                        .frame(width: 100, alignment: .leading)
-                                    TextField("1 - \(UInt16.max)", text: $stringUdpPort)
-                                        .keyboardType(.numberPad)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                                        .frame(maxWidth: .infinity)
-                                    Button(action: {
-                                        SocLogger.debug("OnePingSetting: Button: udpPort OK")
-                                        do {
-                                            object.oneSettingUdpPort = try self.getInt(stringValue: self.stringUdpPort, min: 1, max: Int(UInt16.max))
-                                            self.isSetUdpPort = true
-                                        }
-                                        catch let error as SocPingError {
-                                            self.alertTitle = error.message
-                                            self.isPopAlert = true
-                                        }
-                                        catch {
-                                            SocLogger.error("OnePingSetting: \(error)")
-                                            assertionFailure("OnePingSetting: \(error)")
-                                            self.isPopAlert = true
-                                        }
-                                    }) {
-                                        Text("Button_OK")
-                                            .foregroundColor(Color.init(UIColor.systemBlue))
-                                    }
-                                }
-                                .alert(isPresented: self.$isPopAlert) {
-                                    Alert(title: Text(self.alertTitle))
-                                }
-                            }
-                            else {
-                                HStack {
-                                    Text("Label_Port_number")
-                                        .frame(width: 100, alignment: .leading)
-                                    Spacer()
-                                    Text("\(object.oneSettingUdpPort)")
-                                }
-                            }
-                        }
-                        else {  // SocPingEcho.portTypeRandom
-                            HStack {
-                                Text("Label_Port_number")
-                                    .frame(width: 100, alignment: .leading)
-                                Spacer()
-                                Text("\(SocPingEcho.portRangeStart) - \(UInt16.max)")
-                            }
-                        }
-                    }
-                }
-                Section(header: Text("PAYLOAD").font(.system(size: 16, weight: .semibold)),
-                        footer: object.appSettingDescription ? Text("Footer_one_PAYLOAD").font(.system(size: 12)) : nil) {
-                    HStack {
-                        Text("Label_Data_type")
-                            .frame(width: 100, alignment: .leading)
-                        Picker("", selection: self.$object.oneSettingPayloadDataType) {
-                            Text("Label_All_Zero").tag(SocPingEcho.payloadTypeZ)
-                            Text("Label_All_0xFF").tag(SocPingEcho.payloadTypeF)
-                            Text("Label_Continuous").tag(SocPingEcho.payloadTypeC)
-                            Text("Label_Random").tag(SocPingEcho.payloadTypeR)
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
-                    }
-                    HStack {
-                        Text("Label_Size_type")
-                            .frame(width: 100, alignment: .leading)
-                        Picker("", selection: self.$object.oneSettingPayloadSizeType) {
-                            Text("Label_Default").tag(SocPingEcho.valueTypeDefault)
-                            Text("Label_Users_size").tag(SocPingEcho.valueTypeUserSet)
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
-                    }
-                    if object.oneSettingPayloadSizeType == SocPingEcho.valueTypeDefault {
-                        HStack {
-                            Text("Label_Data_size")
-                                .frame(width: 100, alignment: .leading)
-                            Spacer()
-                            SocPingMenu.getBytes(SocPingOnePinger.payloadSizeDefault)
-                        }
-                    }
-                    else {  // SocPingEcho.valueTypeUserSet
-                        if !self.isSetPayloadLen {
-                            HStack {
-                                Text("Label_Data_size")
-                                    .frame(width: 100, alignment: .leading)
-                                TextField("0 - \(ICMP_MAXLEN)", text: $stringPayloadLen)
-                                    .keyboardType(.numberPad)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .frame(maxWidth: .infinity)
-                                Button(action: {
-                                    SocLogger.debug("OnePingSetting: Button: payloadLen OK")
-                                    do {
-                                        object.oneSettingPayloadSize = try self.getInt(stringValue: self.stringPayloadLen, min: 0, max: ICMP_MAXLEN)
-                                        self.isSetPayloadLen = true
-                                    }
-                                    catch let error as SocPingError {
-                                        self.alertTitle = error.message
-                                        self.isPopAlert = true
-                                    }
-                                    catch {
-                                        SocLogger.error("OnePingSetting: \(error)")
-                                        assertionFailure("OnePingSetting: \(error)")
-                                        self.isPopAlert = true
-                                    }
-                                }) {
-                                    Text("Button_OK")
-                                        .foregroundColor(Color.init(UIColor.systemBlue))
-                                }
-                            }
-                            .alert(isPresented: self.$isPopAlert) {
-                                Alert(title: Text(self.alertTitle))
-                            }
-                        }
-                        else {
-                            HStack {
-                                Text("Label_Data_size")
-                                    .frame(width: 100, alignment: .leading)
-                                Spacer()
-                                SocPingMenu.getBytes(object.oneSettingPayloadSize)
-                            }
-                        }
-                    }
-                }
-                Section(header: Text("WAIT TIME").font(.system(size: 16, weight: .semibold)),
-                        footer: object.appSettingDescription ? Text("Footer_one_WAIT_TIME").font(.system(size: 12)) : nil) {
-                    if !self.isSetWaittime {
-                        HStack {
-                            TextField("0.1 - 3600.0", text: $stringWaittime)
-                                .keyboardType(.decimalPad)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .frame(maxWidth: .infinity)
-                            Button(action: {
-                                SocLogger.debug("OnePingSetting: Button: Waittime OK")
-                                do {
-                                    object.oneSettingWaittime = try self.getMSec(stringValue: stringWaittime, min: 0.1, max: 3600.0)
-                                    self.isSetWaittime = true
-                                }
-                                catch let error as SocPingError {
-                                    self.alertTitle = error.message
-                                    self.isPopAlert = true
-                                }
-                                catch {
-                                    SocLogger.error("OnePingSetting: \(error)")
-                                    assertionFailure("OnePingSetting: \(error)")
-                                    self.isPopAlert = true
-                                }
-                            }) {
-                                Text("Button_OK")
-                                    .foregroundColor(Color.init(UIColor.systemBlue))
-                            }
-                        }
-                        .alert(isPresented: self.$isPopAlert) {
-                            Alert(title: Text(self.alertTitle))
-                        }
-                    }
-                    else {
-                        HStack {
-                            Spacer()
-                            SocPingMenu.getSeconds(object.oneSettingWaittime)
-                        }
-                    }
-                }
-            }
-            Group {
-                Section(header: Text("TIME TO LIVE").font(.system(size: 16, weight: .semibold)),
-                        footer: object.appSettingDescription ? Text("Footer_one_TIME_TO_LIVE").font(.system(size: 12)) : nil) {
-                    Toggle(isOn: self.$object.oneSettingUseTtl) {
-                        Text("Label_Specify_TTL")
-                    }
-                    if object.oneSettingUseTtl {
-                        if !self.isSetTtl {
-                            HStack {
-                                Text("Label_TTL_value")
-                                    .frame(width: 100, alignment: .leading)
-                                TextField("1 - \(UInt8.max)", text: $stringTtl)
-                                    .keyboardType(.numberPad)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .frame(maxWidth: .infinity)
-                                Button(action: {
-                                    SocLogger.debug("OnePingSetting: Button: ttl OK")
-                                    do {
-                                        object.oneSettingTtl = try self.getInt(stringValue: self.stringTtl, min: 1, max: Int(UInt8.max))
-                                        self.isSetTtl = true
-                                    }
-                                    catch let error as SocPingError {
-                                        self.alertTitle = error.message
-                                        self.isPopAlert = true
-                                    }
-                                    catch {
-                                        SocLogger.error("OnePingSetting: \(error)")
-                                        assertionFailure("OnePingSetting: \(error)")
-                                        self.isPopAlert = true
-                                    }
-                                }) {
-                                    Text("Button_OK")
-                                        .foregroundColor(Color.init(UIColor.systemBlue))
-                                }
-                            }
-                            .alert(isPresented: self.$isPopAlert) {
-                                Alert(title: Text(self.alertTitle))
-                            }
-                        }
-                        else {
-                            HStack {
-                                Text("Label_TTL_value")
-                                    .frame(width: 100, alignment: .leading)
-                                Spacer()
-                                Text("\(object.oneSettingTtl)")
-                            }
-                        }
-                    }
-                }
-                Section(header: Text("TYPE OF SERVICE").font(.system(size: 16, weight: .semibold)),
-                        footer: object.appSettingDescription ? Text("Footer_one_TYPE_OF_SERVICE").font(.system(size: 12)) : nil) {
-                    Toggle(isOn: self.$object.oneSettingUseTos) {
-                        Text("Label_Specify_TOS")
-                    }
-                    if object.oneSettingUseTos {
-                        if !self.isSetTos {
-                            HStack {
-                                Text("Label_TOS_value")
-                                    .frame(width: 100, alignment: .leading)
-                                TextField("0 - \(UInt8.max)", text: $stringTos)
-                                    .keyboardType(.numberPad)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .frame(maxWidth: .infinity)
-                                Button(action: {
-                                    SocLogger.debug("OnePingSetting: Button: Tos OK")
-                                    do {
-                                        object.oneSettingTos = try self.getInt(stringValue: self.stringTos, min: 0, max: Int(UInt8.max))
-                                        self.isSetTos = true
-                                    }
-                                    catch let error as SocPingError {
-                                        self.alertTitle = error.message
-                                        self.isPopAlert = true
-                                    }
-                                    catch {
-                                        SocLogger.error("OnePingSetting: \(error)")
-                                        assertionFailure("OnePingSetting: \(error)")
-                                        self.isPopAlert = true
-                                    }
-                                }) {
-                                    Text("Button_OK")
-                                        .foregroundColor(Color.init(UIColor.systemBlue))
-                                }
-                            }
-                            .alert(isPresented: self.$isPopAlert) {
-                                Alert(title: Text(self.alertTitle))
-                            }
-                        }
-                        else {
-                            HStack {
-                                Text("Label_TOS_value")
-                                    .frame(width: 100, alignment: .leading)
-                                Spacer()
-                                Text("\(object.oneSettingTos)")
-                            }
-                        }
-                    }
-                }
-                Section(header: Text("ROUTING TABLE").font(.system(size: 16, weight: .semibold)),
-                        footer: object.appSettingDescription ? Text("Footer_one_ROUTING_TABLE").font(.system(size: 12)) : nil) {
-                    Toggle(isOn: self.$object.oneSettingDontroute) {
-                        Text("Label_Bypass")
-                    }
-                }
-                Section(header: Text("MULTICAST LOOPBACK").font(.system(size: 16, weight: .semibold)),
-                        footer: object.appSettingDescription ? Text("Footer_one_MULTICAST_LOOPBACK").font(.system(size: 12)) : nil) {
-                    Toggle(isOn: self.$object.oneSettingNoLoop) {
-                        Text("Label_Suppress")
-                    }
-                }
-                Section(header: Text("SOURCE INTERFACE").font(.system(size: 16, weight: .semibold)),
-                        footer: object.appSettingDescription ? Text("Footer_one_SOURCE_INTERFACE").font(.system(size: 12)) : nil) {
-                    Toggle(isOn: self.$object.oneSettingUseSrcIf) {
-                        Text("Label_Specify_interface")
-                    }
-                    if self.object.oneSettingUseSrcIf {
-                        Picker("", selection: self.$object.oneSettingInterface) {
-                            Text("Label_Wi-Fi").tag(SocPingInterface.deviceTypeWifi)
-                            Text("Label_Cellurar").tag(SocPingInterface.deviceTypeCellurar)
-                            Text("Label_Hotspot").tag(SocPingInterface.deviceTypeHotspot)
-                            Text("Label_Loopback").tag(SocPingInterface.deviceTypeLoopback)
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
-                    }
-                }
-                Section(header: Text("LOOSE SOURCE ROUTING").font(.system(size: 16, weight: .semibold)),
-                        footer: object.appSettingDescription ? Text("Footer_one_LOOSE_SOURCE_ROUTING").font(.system(size: 12)) : nil) {
-                    Toggle(isOn: self.$object.oneSettingUseLsrr) {
-                        Text("Label_Enabled")
-                    }
-                    if object.oneSettingUseLsrr {
-                        HStack {
-                            VStack {
-                                Text("Label_Gateways")
-                                    .frame(width: 150, alignment: .leading)
-                            }
-                            if object.gateways.count > 0 {
-                                VStack(alignment: .leading, spacing: 0) {
-                                    ForEach(0 ..< object.gateways.count, id: \.self) { i in
-                                        HStack {
-                                            Image(systemName: "\(i + 1).circle.fill")
-                                                .resizable()
-                                                .scaledToFit()
-                                                .frame(width: 18, height: 18, alignment: .center)
-                                            Text(object.gateways[i].addr)
-                                        }
-                                        .frame(alignment: .leading)
-                                    }
-                                }
-                                Spacer()
-                            }
-                            else {
-                                Spacer()
-                                Text("Label_Not_specified")
-                            }
-                            ZStack {
-                                NavigationLink(destination: SocPingGatewayManager()) {
-                                    Text("")
-                                }
-                                Button(action: {
-                                    SocLogger.debug("OnePingSetting: Button: Gateways")
-                                    for j in 0 ..< object.gwOrders.count {
-                                        object.gwOrders[j] = 0
-                                    }
-                                    for i in 0 ..< object.gateways.count {
-                                        for j in 0 ..< object.addresses.count {
-                                            if object.addresses[j].addr == object.gateways[i].addr {
-                                                object.gwOrders[j] = i + 1
-                                                break
-                                            }
-                                        }
-                                    }
-                                }) {
-                                    Text("")
-                                }
-                            }
-                            .frame(width: 20)
-                        }
-                    }
-                }
-                Section(header: Text("RECORD ROUTE").font(.system(size: 16, weight: .semibold)),
-                        footer: object.appSettingDescription ? Text("Footer_one_RECORD_ROUTE").font(.system(size: 12)) : nil) {
-                    Toggle(isOn: self.$object.oneSettingUseRr) {
-                        Text("Label_Enabled")
-                    }
-                }
-            }
-        }
-        .listStyle(GroupedListStyle())
-        .navigationBarTitle("One Ping Settings", displayMode: .inline)
-    }
-    
-    func getInt(stringValue: String, min: Int, max: Int) throws -> Int {
-        if stringValue.isEmpty {
-            throw SocPingError.NoValue
-        }
-        guard let value = Int(stringValue) else {
-            throw SocPingError.InvalidValue
-        }
-        if value < min || value > max {
-            throw SocPingError.InvalidValue
-        }
-        return value
-    }
-    
-    func getMSec(stringValue: String, min: Double, max: Double) throws -> Int {
-        if stringValue.isEmpty {
-            throw SocPingError.NoValue
-        }
-        guard let value = Double(stringValue) else {
-            throw SocPingError.InvalidValue
-        }
-        if value < min || value > max {
-            throw SocPingError.InvalidValue
-        }
-        return Int(value * 1000.0)
     }
 }
 
@@ -1561,13 +966,41 @@ fileprivate struct TracerouteSettings: View {
                         Text("Label_Specify_interface")
                     }
                     if self.object.traceSettingUseSrcIf {
-                        Picker("", selection: self.$object.traceSettingInterface) {
-                            Text("Label_Wi-Fi").tag(SocPingInterface.deviceTypeWifi)
-                            Text("Label_Cellurar").tag(SocPingInterface.deviceTypeCellurar)
-                            Text("Label_Hotspot").tag(SocPingInterface.deviceTypeHotspot)
-                            Text("Label_Loopback").tag(SocPingInterface.deviceTypeLoopback)
+                        VStack {
+                            HStack {
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "wifi")
+                                    Spacer()
+                                }
+                                .foregroundColor(object.interfaces[SocPingInterface.deviceTypeWifi].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "antenna.radiowaves.left.and.right")
+                                    Spacer()
+                                }
+                                .foregroundColor(object.interfaces[SocPingInterface.deviceTypeCellurar].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "personalhotspot")
+                                    Spacer()
+                                }
+                                .foregroundColor(object.interfaces[SocPingInterface.deviceTypeHotspot].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "arrow.triangle.2.circlepath")
+                                    Spacer()
+                                }
+                                .foregroundColor(object.interfaces[SocPingInterface.deviceTypeLoopback].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
+                            }
+                            Picker("", selection: self.$object.traceSettingInterface) {
+                                Text("Label_Wi-Fi").tag(SocPingInterface.deviceTypeWifi)
+                                Text("Label_Cellurar").tag(SocPingInterface.deviceTypeCellurar)
+                                Text("Label_Hotspot").tag(SocPingInterface.deviceTypeHotspot)
+                                Text("Label_Loopback").tag(SocPingInterface.deviceTypeLoopback)
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
                         }
-                        .pickerStyle(SegmentedPickerStyle())
                     }
                 }
                 Section(header: Text("LOOSE SOURCE ROUTING").font(.system(size: 16, weight: .semibold)),
@@ -1687,6 +1120,629 @@ fileprivate struct TracerouteSettings: View {
     }
 }
 
+fileprivate struct OnePingSettings: View {
+    @EnvironmentObject var object: SocPingSharedObject
+    @State private var stringIcmpId: String
+    @State private var stringIcmpSeq: String
+    @State private var stringUdpPort: String
+    @State private var stringPayloadLen: String
+    @State private var stringWaittime: String
+    @State private var stringTtl: String
+    @State private var stringTos: String
+    @State private var isSetIcmpId: Bool = false
+    @State private var isSetIcmpSeq: Bool = false
+    @State private var isSetUdpPort: Bool = false
+    @State private var isSetPayloadLen: Bool = false
+    @State private var isSetWaittime: Bool = false
+    @State private var isSetTtl: Bool = false
+    @State private var isSetTos: Bool = false
+    @State private var alertTitle: String = "Unexpected error."
+    @State private var isPopAlert: Bool = false
+    
+    init(icmpId: Int,
+         icmpSeq: Int,
+         udpPort: Int,
+         payloadLen: Int,
+         waittime: Int,
+         ttl: Int,
+         tos: Int) {
+        _stringIcmpId = State(initialValue: String(icmpId))
+        _stringIcmpSeq = State(initialValue: String(icmpSeq))
+        _stringUdpPort = State(initialValue: String(udpPort))
+        _stringPayloadLen = State(initialValue: String(payloadLen))
+        _stringWaittime = State(initialValue: String(format: "%.3f", Double(waittime) / 1000.0))
+        _stringTtl = State(initialValue: String(ttl))
+        _stringTos = State(initialValue: String(tos))
+    }
+    
+    var body: some View {
+        List {
+            Group {
+                Section(header: Text("VERBOSE").font(.system(size: 16, weight: .semibold)),
+                        footer: object.appSettingDescription ? Text("Footer_one_VERBOSE").font(.system(size: 12)) : nil) {
+                    Toggle(isOn: self.$object.oneSettingVerbose) {
+                        Text("Label_Enabled")
+                    }
+                }
+                Section(header: Text("PROTOCOL").font(.system(size: 16, weight: .semibold)),
+                        footer: object.appSettingDescription ? Text("Footer_one_PROTOCOL").font(.system(size: 12)) : nil) {
+                    HStack {
+                        Text("Label_IP_protocol")
+                            .frame(width: 100, alignment: .leading)
+                        Picker("", selection: self.$object.oneSettingIpProto) {
+                            Text("Label_ICMP").tag(IPPROTO_ICMP)
+                            Text("Label_UDP").tag(IPPROTO_UDP)
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                    }
+                    if object.oneSettingIpProto == IPPROTO_ICMP {
+                        HStack {
+                            Text("Label_ID_type")
+                                .frame(width: 100, alignment: .leading)
+                            Picker("", selection: self.$object.oneSettingIdType) {
+                                Text("Label_Default").tag(SocPingEcho.valueTypeDefault)
+                                Text("Label_Users_id").tag(SocPingEcho.valueTypeUserSet)
+                                Text("Label_Random").tag(SocPingEcho.valueTypeRandom)
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
+                        }
+                        if object.oneSettingIdType == SocPingEcho.valueTypeDefault {
+                            HStack {
+                                Text("Label_ID_value")
+                                    .frame(width: 100, alignment: .leading)
+                                Spacer()
+                                Text("Label_Apps_PID")
+                            }
+                        }
+                        else if object.oneSettingIdType == SocPingEcho.valueTypeUserSet {
+                            if !self.isSetIcmpId {
+                                HStack {
+                                    Text("Label_ID_value")
+                                        .frame(width: 100, alignment: .leading)
+                                    TextField("0 - \(UInt16.max)", text: $stringIcmpId)
+                                        .keyboardType(.numberPad)
+                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        .frame(maxWidth: .infinity)
+                                    Button(action: {
+                                        SocLogger.debug("OnePingSetting: Button: icmpId OK")
+                                        do {
+                                            object.oneSettingIcmpId = try self.getInt(stringValue: self.stringIcmpId, min: 0, max: Int(UInt16.max))
+                                            self.isSetIcmpId = true
+                                        }
+                                        catch let error as SocPingError {
+                                            self.alertTitle = error.message
+                                            self.isPopAlert = true
+                                        }
+                                        catch {
+                                            SocLogger.error("OnePingSetting: \(error)")
+                                            assertionFailure("OnePingSetting: \(error)")
+                                            self.isPopAlert = true
+                                        }
+                                    }) {
+                                        Text("Button_OK")
+                                            .foregroundColor(Color.init(UIColor.systemBlue))
+                                    }
+                                }
+                                .alert(isPresented: self.$isPopAlert) {
+                                    Alert(title: Text(self.alertTitle))
+                                }
+                            }
+                            else {
+                                HStack {
+                                    Text("Label_ID_value")
+                                        .frame(width: 100, alignment: .leading)
+                                    Spacer()
+                                    Text("\(object.oneSettingIcmpId)")
+                                }
+                            }
+                        }
+                        else {  // SocPingEcho.idTypeRandom
+                            HStack {
+                                Text("Label_ID_value")
+                                    .frame(width: 100, alignment: .leading)
+                                Spacer()
+                                Text("0 - \(UInt16.max)")
+                            }
+                        }
+                        HStack {
+                            Text("Label_SEQ_type")
+                                .frame(width: 100, alignment: .leading)
+                            Picker("", selection: self.$object.oneSettingSeqType) {
+                                Text("Label_Default").tag(SocPingEcho.valueTypeDefault)
+                                Text("Label_Users_seq").tag(SocPingEcho.valueTypeUserSet)
+                                Text("Label_Random").tag(SocPingEcho.valueTypeRandom)
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
+                        }
+                        if object.oneSettingSeqType == SocPingEcho.valueTypeDefault {
+                            HStack {
+                                Text("Label_SEQ_value")
+                                    .frame(width: 100, alignment: .leading)
+                                Spacer()
+                                Text("0")
+                            }
+                        }
+                        else if object.oneSettingSeqType == SocPingEcho.valueTypeUserSet {
+                            if !self.isSetIcmpSeq {
+                                HStack {
+                                    Text("Label_SEQ_value")
+                                        .frame(width: 100, alignment: .leading)
+                                    TextField("0 - \(UInt16.max)", text: $stringIcmpSeq)
+                                        .keyboardType(.numberPad)
+                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        .frame(maxWidth: .infinity)
+                                    Button(action: {
+                                        SocLogger.debug("OnePingSetting: Button: icmpSeq OK")
+                                        do {
+                                            object.oneSettingIcmpSeq = try self.getInt(stringValue: self.stringIcmpSeq, min: 0, max: Int(UInt16.max))
+                                            self.isSetIcmpSeq = true
+                                        }
+                                        catch let error as SocPingError {
+                                            self.alertTitle = error.message
+                                            self.isPopAlert = true
+                                        }
+                                        catch {
+                                            SocLogger.error("OnePingSetting: \(error)")
+                                            assertionFailure("OnePingSetting: \(error)")
+                                            self.isPopAlert = true
+                                        }
+                                    }) {
+                                        Text("Button_OK")
+                                            .foregroundColor(Color.init(UIColor.systemBlue))
+                                    }
+                                }
+                                .alert(isPresented: self.$isPopAlert) {
+                                    Alert(title: Text(self.alertTitle))
+                                }
+                            }
+                            else {
+                                HStack {
+                                    Text("Label_SEQ_value")
+                                        .frame(width: 100, alignment: .leading)
+                                    Spacer()
+                                    Text("\(object.oneSettingIcmpSeq)")
+                                }
+                            }
+                        }
+                        else {  // SocPingEcho.idTypeRandom
+                            HStack {
+                                Text("Label_SEQ_value")
+                                    .frame(width: 100, alignment: .leading)
+                                Spacer()
+                                Text("0 - \(UInt16.max)")
+                            }
+                        }
+                    }
+                    else {  // UDP
+                        HStack {
+                            Text("Label_Port_type")
+                                .frame(width: 100, alignment: .leading)
+                            Picker("", selection: self.$object.oneSettingPortType) {
+                                Text("Label_Default").tag(SocPingEcho.valueTypeDefault)
+                                Text("Label_Users_port").tag(SocPingEcho.valueTypeUserSet)
+                                Text("Label_Random").tag(SocPingEcho.valueTypeRandom)
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
+                        }
+                        if object.oneSettingPortType == SocPingEcho.valueTypeDefault {
+                            HStack {
+                                Text("Label_Port_number")
+                                    .frame(width: 100, alignment: .leading)
+                                Spacer()
+                                Text("\(SocPingEcho.pingPortDefault)")
+                            }
+                        }
+                        else if object.oneSettingPortType == SocPingEcho.valueTypeUserSet {
+                            if !self.isSetUdpPort {
+                                HStack {
+                                    Text("Label_Port_number")
+                                        .frame(width: 100, alignment: .leading)
+                                    TextField("1 - \(UInt16.max)", text: $stringUdpPort)
+                                        .keyboardType(.numberPad)
+                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        .frame(maxWidth: .infinity)
+                                    Button(action: {
+                                        SocLogger.debug("OnePingSetting: Button: udpPort OK")
+                                        do {
+                                            object.oneSettingUdpPort = try self.getInt(stringValue: self.stringUdpPort, min: 1, max: Int(UInt16.max))
+                                            self.isSetUdpPort = true
+                                        }
+                                        catch let error as SocPingError {
+                                            self.alertTitle = error.message
+                                            self.isPopAlert = true
+                                        }
+                                        catch {
+                                            SocLogger.error("OnePingSetting: \(error)")
+                                            assertionFailure("OnePingSetting: \(error)")
+                                            self.isPopAlert = true
+                                        }
+                                    }) {
+                                        Text("Button_OK")
+                                            .foregroundColor(Color.init(UIColor.systemBlue))
+                                    }
+                                }
+                                .alert(isPresented: self.$isPopAlert) {
+                                    Alert(title: Text(self.alertTitle))
+                                }
+                            }
+                            else {
+                                HStack {
+                                    Text("Label_Port_number")
+                                        .frame(width: 100, alignment: .leading)
+                                    Spacer()
+                                    Text("\(object.oneSettingUdpPort)")
+                                }
+                            }
+                        }
+                        else {  // SocPingEcho.portTypeRandom
+                            HStack {
+                                Text("Label_Port_number")
+                                    .frame(width: 100, alignment: .leading)
+                                Spacer()
+                                Text("\(SocPingEcho.portRangeStart) - \(UInt16.max)")
+                            }
+                        }
+                    }
+                }
+                Section(header: Text("PAYLOAD").font(.system(size: 16, weight: .semibold)),
+                        footer: object.appSettingDescription ? Text("Footer_one_PAYLOAD").font(.system(size: 12)) : nil) {
+                    HStack {
+                        Text("Label_Data_type")
+                            .frame(width: 100, alignment: .leading)
+                        Picker("", selection: self.$object.oneSettingPayloadDataType) {
+                            Text("Label_All_Zero").tag(SocPingEcho.payloadTypeZ)
+                            Text("Label_All_0xFF").tag(SocPingEcho.payloadTypeF)
+                            Text("Label_Continuous").tag(SocPingEcho.payloadTypeC)
+                            Text("Label_Random").tag(SocPingEcho.payloadTypeR)
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                    }
+                    HStack {
+                        Text("Label_Size_type")
+                            .frame(width: 100, alignment: .leading)
+                        Picker("", selection: self.$object.oneSettingPayloadSizeType) {
+                            Text("Label_Default").tag(SocPingEcho.valueTypeDefault)
+                            Text("Label_Users_size").tag(SocPingEcho.valueTypeUserSet)
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                    }
+                    if object.oneSettingPayloadSizeType == SocPingEcho.valueTypeDefault {
+                        HStack {
+                            Text("Label_Data_size")
+                                .frame(width: 100, alignment: .leading)
+                            Spacer()
+                            SocPingMenu.getBytes(SocPingOnePinger.payloadSizeDefault)
+                        }
+                    }
+                    else {  // SocPingEcho.valueTypeUserSet
+                        if !self.isSetPayloadLen {
+                            HStack {
+                                Text("Label_Data_size")
+                                    .frame(width: 100, alignment: .leading)
+                                TextField("0 - \(ICMP_MAXLEN)", text: $stringPayloadLen)
+                                    .keyboardType(.numberPad)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .frame(maxWidth: .infinity)
+                                Button(action: {
+                                    SocLogger.debug("OnePingSetting: Button: payloadLen OK")
+                                    do {
+                                        object.oneSettingPayloadSize = try self.getInt(stringValue: self.stringPayloadLen, min: 0, max: ICMP_MAXLEN)
+                                        self.isSetPayloadLen = true
+                                    }
+                                    catch let error as SocPingError {
+                                        self.alertTitle = error.message
+                                        self.isPopAlert = true
+                                    }
+                                    catch {
+                                        SocLogger.error("OnePingSetting: \(error)")
+                                        assertionFailure("OnePingSetting: \(error)")
+                                        self.isPopAlert = true
+                                    }
+                                }) {
+                                    Text("Button_OK")
+                                        .foregroundColor(Color.init(UIColor.systemBlue))
+                                }
+                            }
+                            .alert(isPresented: self.$isPopAlert) {
+                                Alert(title: Text(self.alertTitle))
+                            }
+                        }
+                        else {
+                            HStack {
+                                Text("Label_Data_size")
+                                    .frame(width: 100, alignment: .leading)
+                                Spacer()
+                                SocPingMenu.getBytes(object.oneSettingPayloadSize)
+                            }
+                        }
+                    }
+                }
+                Section(header: Text("WAIT TIME").font(.system(size: 16, weight: .semibold)),
+                        footer: object.appSettingDescription ? Text("Footer_one_WAIT_TIME").font(.system(size: 12)) : nil) {
+                    if !self.isSetWaittime {
+                        HStack {
+                            TextField("0.1 - 3600.0", text: $stringWaittime)
+                                .keyboardType(.decimalPad)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .frame(maxWidth: .infinity)
+                            Button(action: {
+                                SocLogger.debug("OnePingSetting: Button: Waittime OK")
+                                do {
+                                    object.oneSettingWaittime = try self.getMSec(stringValue: stringWaittime, min: 0.1, max: 3600.0)
+                                    self.isSetWaittime = true
+                                }
+                                catch let error as SocPingError {
+                                    self.alertTitle = error.message
+                                    self.isPopAlert = true
+                                }
+                                catch {
+                                    SocLogger.error("OnePingSetting: \(error)")
+                                    assertionFailure("OnePingSetting: \(error)")
+                                    self.isPopAlert = true
+                                }
+                            }) {
+                                Text("Button_OK")
+                                    .foregroundColor(Color.init(UIColor.systemBlue))
+                            }
+                        }
+                        .alert(isPresented: self.$isPopAlert) {
+                            Alert(title: Text(self.alertTitle))
+                        }
+                    }
+                    else {
+                        HStack {
+                            Spacer()
+                            SocPingMenu.getSeconds(object.oneSettingWaittime)
+                        }
+                    }
+                }
+            }
+            Group {
+                Section(header: Text("TIME TO LIVE").font(.system(size: 16, weight: .semibold)),
+                        footer: object.appSettingDescription ? Text("Footer_one_TIME_TO_LIVE").font(.system(size: 12)) : nil) {
+                    Toggle(isOn: self.$object.oneSettingUseTtl) {
+                        Text("Label_Specify_TTL")
+                    }
+                    if object.oneSettingUseTtl {
+                        if !self.isSetTtl {
+                            HStack {
+                                Text("Label_TTL_value")
+                                    .frame(width: 100, alignment: .leading)
+                                TextField("1 - \(UInt8.max)", text: $stringTtl)
+                                    .keyboardType(.numberPad)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .frame(maxWidth: .infinity)
+                                Button(action: {
+                                    SocLogger.debug("OnePingSetting: Button: ttl OK")
+                                    do {
+                                        object.oneSettingTtl = try self.getInt(stringValue: self.stringTtl, min: 1, max: Int(UInt8.max))
+                                        self.isSetTtl = true
+                                    }
+                                    catch let error as SocPingError {
+                                        self.alertTitle = error.message
+                                        self.isPopAlert = true
+                                    }
+                                    catch {
+                                        SocLogger.error("OnePingSetting: \(error)")
+                                        assertionFailure("OnePingSetting: \(error)")
+                                        self.isPopAlert = true
+                                    }
+                                }) {
+                                    Text("Button_OK")
+                                        .foregroundColor(Color.init(UIColor.systemBlue))
+                                }
+                            }
+                            .alert(isPresented: self.$isPopAlert) {
+                                Alert(title: Text(self.alertTitle))
+                            }
+                        }
+                        else {
+                            HStack {
+                                Text("Label_TTL_value")
+                                    .frame(width: 100, alignment: .leading)
+                                Spacer()
+                                Text("\(object.oneSettingTtl)")
+                            }
+                        }
+                    }
+                }
+                Section(header: Text("TYPE OF SERVICE").font(.system(size: 16, weight: .semibold)),
+                        footer: object.appSettingDescription ? Text("Footer_one_TYPE_OF_SERVICE").font(.system(size: 12)) : nil) {
+                    Toggle(isOn: self.$object.oneSettingUseTos) {
+                        Text("Label_Specify_TOS")
+                    }
+                    if object.oneSettingUseTos {
+                        if !self.isSetTos {
+                            HStack {
+                                Text("Label_TOS_value")
+                                    .frame(width: 100, alignment: .leading)
+                                TextField("0 - \(UInt8.max)", text: $stringTos)
+                                    .keyboardType(.numberPad)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .frame(maxWidth: .infinity)
+                                Button(action: {
+                                    SocLogger.debug("OnePingSetting: Button: Tos OK")
+                                    do {
+                                        object.oneSettingTos = try self.getInt(stringValue: self.stringTos, min: 0, max: Int(UInt8.max))
+                                        self.isSetTos = true
+                                    }
+                                    catch let error as SocPingError {
+                                        self.alertTitle = error.message
+                                        self.isPopAlert = true
+                                    }
+                                    catch {
+                                        SocLogger.error("OnePingSetting: \(error)")
+                                        assertionFailure("OnePingSetting: \(error)")
+                                        self.isPopAlert = true
+                                    }
+                                }) {
+                                    Text("Button_OK")
+                                        .foregroundColor(Color.init(UIColor.systemBlue))
+                                }
+                            }
+                            .alert(isPresented: self.$isPopAlert) {
+                                Alert(title: Text(self.alertTitle))
+                            }
+                        }
+                        else {
+                            HStack {
+                                Text("Label_TOS_value")
+                                    .frame(width: 100, alignment: .leading)
+                                Spacer()
+                                Text("\(object.oneSettingTos)")
+                            }
+                        }
+                    }
+                }
+                Section(header: Text("ROUTING TABLE").font(.system(size: 16, weight: .semibold)),
+                        footer: object.appSettingDescription ? Text("Footer_one_ROUTING_TABLE").font(.system(size: 12)) : nil) {
+                    Toggle(isOn: self.$object.oneSettingDontroute) {
+                        Text("Label_Bypass")
+                    }
+                }
+                Section(header: Text("MULTICAST LOOPBACK").font(.system(size: 16, weight: .semibold)),
+                        footer: object.appSettingDescription ? Text("Footer_one_MULTICAST_LOOPBACK").font(.system(size: 12)) : nil) {
+                    Toggle(isOn: self.$object.oneSettingNoLoop) {
+                        Text("Label_Suppress")
+                    }
+                }
+                Section(header: Text("SOURCE INTERFACE").font(.system(size: 16, weight: .semibold)),
+                        footer: object.appSettingDescription ? Text("Footer_one_SOURCE_INTERFACE").font(.system(size: 12)) : nil) {
+                    Toggle(isOn: self.$object.oneSettingUseSrcIf) {
+                        Text("Label_Specify_interface")
+                    }
+                    if self.object.oneSettingUseSrcIf {
+                        VStack {
+                            HStack {
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "wifi")
+                                    Spacer()
+                                }
+                                .foregroundColor(object.interfaces[SocPingInterface.deviceTypeWifi].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "antenna.radiowaves.left.and.right")
+                                    Spacer()
+                                }
+                                .foregroundColor(object.interfaces[SocPingInterface.deviceTypeCellurar].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "personalhotspot")
+                                    Spacer()
+                                }
+                                .foregroundColor(object.interfaces[SocPingInterface.deviceTypeHotspot].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "arrow.triangle.2.circlepath")
+                                    Spacer()
+                                }
+                                .foregroundColor(object.interfaces[SocPingInterface.deviceTypeLoopback].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
+                            }
+                            Picker("", selection: self.$object.oneSettingInterface) {
+                                Text("Label_Wi-Fi").tag(SocPingInterface.deviceTypeWifi)
+                                Text("Label_Cellurar").tag(SocPingInterface.deviceTypeCellurar)
+                                Text("Label_Hotspot").tag(SocPingInterface.deviceTypeHotspot)
+                                Text("Label_Loopback").tag(SocPingInterface.deviceTypeLoopback)
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
+                        }
+                    }
+                }
+                Section(header: Text("LOOSE SOURCE ROUTING").font(.system(size: 16, weight: .semibold)),
+                        footer: object.appSettingDescription ? Text("Footer_one_LOOSE_SOURCE_ROUTING").font(.system(size: 12)) : nil) {
+                    Toggle(isOn: self.$object.oneSettingUseLsrr) {
+                        Text("Label_Enabled")
+                    }
+                    if object.oneSettingUseLsrr {
+                        HStack {
+                            VStack {
+                                Text("Label_Gateways")
+                                    .frame(width: 150, alignment: .leading)
+                            }
+                            if object.gateways.count > 0 {
+                                VStack(alignment: .leading, spacing: 0) {
+                                    ForEach(0 ..< object.gateways.count, id: \.self) { i in
+                                        HStack {
+                                            Image(systemName: "\(i + 1).circle.fill")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 18, height: 18, alignment: .center)
+                                            Text(object.gateways[i].addr)
+                                        }
+                                        .frame(alignment: .leading)
+                                    }
+                                }
+                                Spacer()
+                            }
+                            else {
+                                Spacer()
+                                Text("Label_Not_specified")
+                            }
+                            ZStack {
+                                NavigationLink(destination: SocPingGatewayManager()) {
+                                    Text("")
+                                }
+                                Button(action: {
+                                    SocLogger.debug("OnePingSetting: Button: Gateways")
+                                    for j in 0 ..< object.gwOrders.count {
+                                        object.gwOrders[j] = 0
+                                    }
+                                    for i in 0 ..< object.gateways.count {
+                                        for j in 0 ..< object.addresses.count {
+                                            if object.addresses[j].addr == object.gateways[i].addr {
+                                                object.gwOrders[j] = i + 1
+                                                break
+                                            }
+                                        }
+                                    }
+                                }) {
+                                    Text("")
+                                }
+                            }
+                            .frame(width: 20)
+                        }
+                    }
+                }
+                Section(header: Text("RECORD ROUTE").font(.system(size: 16, weight: .semibold)),
+                        footer: object.appSettingDescription ? Text("Footer_one_RECORD_ROUTE").font(.system(size: 12)) : nil) {
+                    Toggle(isOn: self.$object.oneSettingUseRr) {
+                        Text("Label_Enabled")
+                    }
+                }
+            }
+        }
+        .listStyle(GroupedListStyle())
+        .navigationBarTitle("One Ping Settings", displayMode: .inline)
+    }
+    
+    func getInt(stringValue: String, min: Int, max: Int) throws -> Int {
+        if stringValue.isEmpty {
+            throw SocPingError.NoValue
+        }
+        guard let value = Int(stringValue) else {
+            throw SocPingError.InvalidValue
+        }
+        if value < min || value > max {
+            throw SocPingError.InvalidValue
+        }
+        return value
+    }
+    
+    func getMSec(stringValue: String, min: Double, max: Double) throws -> Int {
+        if stringValue.isEmpty {
+            throw SocPingError.NoValue
+        }
+        guard let value = Double(stringValue) else {
+            throw SocPingError.InvalidValue
+        }
+        if value < min || value > max {
+            throw SocPingError.InvalidValue
+        }
+        return Int(value * 1000.0)
+    }
+}
+
 fileprivate struct SocPingLogViewer: View {
     @EnvironmentObject var object: SocPingSharedObject
     @State var text: String = ""
@@ -1796,23 +1852,7 @@ fileprivate struct AboutApp: View {
                     .font(.system(size: 15))
                     .padding(.horizontal, 5)
                     .padding(.bottom, 10)
-                HStack {
-                    Image(systemName: "1.circle")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 22, height: 22, alignment: .center)
-                        .padding(.leading, 20)
-                        .padding(.trailing, 3)
-                    Text("One Ping")
-                        .font(.system(size: 20, weight: .semibold))
-                    Spacer()
-                }
-                Text("AboutApp_overview_one")
-                    .font(.system(size: 15))
-                    .padding(.leading, 20)
-                    .padding(.trailing, 15)
-                    .padding(.bottom, 15)
-
+                
                 HStack {
                     Image(systemName: "circle")
                         .resizable()
@@ -1847,6 +1887,23 @@ fileprivate struct AboutApp: View {
                     .padding(.trailing, 15)
                     .padding(.bottom, 15)
                 
+                HStack {
+                    Image(systemName: "1.circle")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 22, height: 22, alignment: .center)
+                        .padding(.leading, 20)
+                        .padding(.trailing, 3)
+                    Text("One Ping")
+                        .font(.system(size: 20, weight: .semibold))
+                    Spacer()
+                }
+                Text("AboutApp_overview_one")
+                    .font(.system(size: 15))
+                    .padding(.leading, 20)
+                    .padding(.trailing, 15)
+                    .padding(.bottom, 15)
+                
                 Text("AboutApp_overview2")
                     .font(.system(size: 15))
                     .padding(.horizontal, 5)
@@ -1866,7 +1923,7 @@ fileprivate struct AboutApp: View {
                     Text("manabapp@gmail.com")
                         .font(.system(size: 11))
                 }
-                Text("Copyright © 2020 manabapp. All rights reserved.")
+                Text("Copyright © 2021 manabapp. All rights reserved.")
                     .font(.system(size: 11))
                     .foregroundColor(Color.init(UIColor.systemGray))
                     .padding(.bottom, 10)
@@ -1895,7 +1952,7 @@ fileprivate struct AppVersion: View {
                 .font(.system(size: 11))
             Text("Localization: en, ja")
                 .font(.system(size: 11))
-            Text("Copyright © 2020 manabapp. All rights reserved.")
+            Text("Copyright © 2021 manabapp. All rights reserved.")
                 .font(.system(size: 11))
                 .foregroundColor(Color.init(UIColor.systemGray))
                 .padding(10)

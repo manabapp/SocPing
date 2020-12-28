@@ -34,7 +34,6 @@
 		6CB4674C2595936600861A05 /* SocPingPinger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB4674B2595936600861A05 /* SocPingPinger.swift */; };
 		6CB4674F2595938A00861A05 /* SocPingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB4674E2595938A00861A05 /* SocPingScreen.swift */; };
 		6CB46752259593A700861A05 /* SocPingSharedObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB46751259593A700861A05 /* SocPingSharedObject.swift */; };
-		6CB46755259593BD00861A05 /* SocPingTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB46754259593BD00861A05 /* SocPingTabView.swift */; };
 		6CB46758259593D100861A05 /* SocPingTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB46757259593D100861A05 /* SocPingTracer.swift */; };
 		6CB4675E2595981800861A05 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6CB467602595981800861A05 /* Localizable.strings */; };
 		6CB467662595A36700861A05 /* PrivacyPolicy.html in Resources */ = {isa = PBXBuildFile; fileRef = 6CB467652595A36700861A05 /* PrivacyPolicy.html */; };
@@ -75,7 +74,6 @@
 		6CB4674B2595936600861A05 /* SocPingPinger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocPingPinger.swift; sourceTree = "<group>"; };
 		6CB4674E2595938A00861A05 /* SocPingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocPingScreen.swift; sourceTree = "<group>"; };
 		6CB46751259593A700861A05 /* SocPingSharedObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocPingSharedObject.swift; sourceTree = "<group>"; };
-		6CB46754259593BD00861A05 /* SocPingTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocPingTabView.swift; sourceTree = "<group>"; };
 		6CB46757259593D100861A05 /* SocPingTracer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocPingTracer.swift; sourceTree = "<group>"; };
 		6CB4675F2595981800861A05 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		6CB467622595985700861A05 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -125,14 +123,13 @@
 				6CB46736259592C400861A05 /* SocPingError.swift */,
 				6CB4674E2595938A00861A05 /* SocPingScreen.swift */,
 				6C4F5CDC25958F7D007E43A6 /* ContentView.swift */,
-				6CB46754259593BD00861A05 /* SocPingTabView.swift */,
-				6CB467302595929200861A05 /* SocPingAddressManager.swift */,
-				6CB46739259592DA00861A05 /* SocPingGatewayManager.swift */,
-				6CB4673F2595931100861A05 /* SocPingInterfaceManager.swift */,
 				6CB467422595932C00861A05 /* SocPingList.swift */,
-				6CB467482595935200861A05 /* SocPingOnePinger.swift */,
 				6CB4674B2595936600861A05 /* SocPingPinger.swift */,
 				6CB46757259593D100861A05 /* SocPingTracer.swift */,
+				6CB467482595935200861A05 /* SocPingOnePinger.swift */,
+				6CB467302595929200861A05 /* SocPingAddressManager.swift */,
+				6CB4673F2595931100861A05 /* SocPingInterfaceManager.swift */,
+				6CB46739259592DA00861A05 /* SocPingGatewayManager.swift */,
 				6CB467452595933F00861A05 /* SocPingMenu.swift */,
 				6CB4672B2595925300861A05 /* SocPing-Bridging-Header.h */,
 				6C4F5CED2595908B007E43A6 /* LibSoc */,
@@ -281,7 +278,6 @@
 				6C4F5CDB25958F7D007E43A6 /* SceneDelegate.swift in Sources */,
 				6CB46734259592AE00861A05 /* SocPingEcho.swift in Sources */,
 				6C4F5CDD25958F7D007E43A6 /* ContentView.swift in Sources */,
-				6CB46755259593BD00861A05 /* SocPingTabView.swift in Sources */,
 				6CB46752259593A700861A05 /* SocPingSharedObject.swift in Sources */,
 				6C4F5CF2259590D6007E43A6 /* icmp.swift in Sources */,
 				6C4F5CFE25959131007E43A6 /* SocLogger.swift in Sources */,
@@ -444,12 +440,13 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = manabapp.SocPing;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "SocPing/SocPing-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -468,11 +465,12 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = manabapp.SocPing;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "SocPing/SocPing-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

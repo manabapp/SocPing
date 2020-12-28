@@ -10,7 +10,7 @@ import SwiftUI
 final class SocPingSharedObject: ObservableObject {
     @Published var orientation: UIInterfaceOrientation = .unknown
     @Published var isProcessing: Bool = false
-    @Published var runningActionType: Int = SocPingList.actionTypeOnePing
+    @Published var runningActionType: Int = SocPingEcho.actionTypeOnePing  // initial is dummy
     @Published var deviceWidth: CGFloat = 0.0
     @Published var interfaces = [SocPingInterface(deviceType: SocPingInterface.deviceTypeWifi),
                                  SocPingInterface(deviceType: SocPingInterface.deviceTypeCellurar),
@@ -66,150 +66,6 @@ final class SocPingSharedObject: ObservableObject {
             }
             else {
                 SocLogger.disableDebug()
-            }
-        }
-    }
-    
-    //===== One Ping =====
-    @Published var oneSettingVerbose: Bool = false {
-        didSet {
-            UserDefaults.standard.set(oneSettingVerbose, forKey: "oneSettingVerbose")
-            SocLogger.debug("SocPingSharedObject: oneSettingVerbose = \(oneSettingVerbose)")
-        }
-    }
-    @Published var oneSettingIpProto: Int32 = IPPROTO_ICMP {  // 0:ICMP, 1:UDP
-        didSet {
-            UserDefaults.standard.set(Int(oneSettingIpProto), forKey: "oneSettingIpProto")
-            SocLogger.debug("SocPingSharedObject: oneSettingIpProto = \(oneSettingIpProto)")
-        }
-    }
-    @Published var oneSettingIdType: Int = SocPingEcho.valueTypeDefault {
-        didSet {
-            UserDefaults.standard.set(oneSettingIdType, forKey: "oneSettingIdType")
-            SocLogger.debug("SocPingSharedObject: oneSettingIdType = \(oneSettingIdType)")
-        }
-    }
-    @Published var oneSettingIcmpId: Int = 0 {
-        didSet {
-            UserDefaults.standard.set(oneSettingIcmpId, forKey: "oneSettingIcmpId")
-            SocLogger.debug("SocPingSharedObject: oneSettingIcmpId = \(oneSettingIcmpId)")
-        }
-    }
-    @Published var oneSettingSeqType: Int = SocPingEcho.valueTypeDefault {
-        didSet {
-            UserDefaults.standard.set(oneSettingSeqType, forKey: "oneSettingSeqType")
-            SocLogger.debug("SocPingSharedObject: oneSettingSeqType = \(oneSettingSeqType)")
-        }
-    }
-    @Published var oneSettingIcmpSeq: Int = 0 {
-        didSet {
-            UserDefaults.standard.set(oneSettingIcmpSeq, forKey: "oneSettingIcmpSeq")
-            SocLogger.debug("SocPingSharedObject: oneSettingIcmpSeq = \(oneSettingIcmpSeq)")
-        }
-    }
-    @Published var oneSettingPortType: Int = SocPingEcho.valueTypeDefault {
-        didSet {
-            UserDefaults.standard.set(oneSettingPortType, forKey: "oneSettingPortType")
-            SocLogger.debug("SocPingSharedObject: oneSettingPortType = \(oneSettingPortType)")
-        }
-    }
-    @Published var oneSettingUdpPort: Int = SocPingEcho.pingPortDefault {
-        didSet {
-            UserDefaults.standard.set(oneSettingUdpPort, forKey: "oneSettingUdpPort")
-            SocLogger.debug("SocPingSharedObject: oneSettingUdpPort = \(oneSettingUdpPort)")
-        }
-    }
-    @Published var oneSettingPayloadDataType: Int = SocPingEcho.payloadTypeC {
-        didSet {
-            UserDefaults.standard.set(oneSettingPayloadDataType, forKey: "oneSettingPayloadDataType")
-            SocLogger.debug("SocPingSharedObject: oneSettingPayloadDataType = \(oneSettingPayloadDataType)")
-        }
-    }
-    @Published var oneSettingPayloadSizeType: Int = SocPingEcho.valueTypeDefault {
-        didSet {
-            UserDefaults.standard.set(oneSettingPayloadSizeType, forKey: "oneSettingPayloadSizeType")
-            SocLogger.debug("SocPingSharedObject: oneSettingPayloadSizeType = \(oneSettingPayloadSizeType)")
-        }
-    }
-    @Published var oneSettingPayloadSize: Int = SocPingOnePinger.payloadSizeDefault {
-        didSet {
-            UserDefaults.standard.set(oneSettingPayloadSize, forKey: "oneSettingPayloadSize")
-            SocLogger.debug("SocPingSharedObject: oneSettingPayloadSize = \(oneSettingPayloadSize)")
-        }
-    }
-    @Published var oneSettingWaittime: Int = SocPingOnePinger.waittimeDefault {
-        didSet {
-            UserDefaults.standard.set(oneSettingWaittime, forKey: "oneSettingWaittime")
-            SocLogger.debug("SocPingSharedObject: oneSettingWaittime = \(oneSettingWaittime)")
-        }
-    }
-    @Published var oneSettingUseTtl: Bool = false {
-        didSet {
-            UserDefaults.standard.set(oneSettingUseTtl, forKey: "oneSettingUseTtl")
-            SocLogger.debug("SocPingSharedObject: oneSettingUseTtl = \(oneSettingUseTtl)")
-        }
-    }
-    @Published var oneSettingTtl: Int = SocPingOnePinger.ttlDefault {
-        didSet {
-            UserDefaults.standard.set(oneSettingTtl, forKey: "oneSettingTtl")
-            SocLogger.debug("SocPingSharedObject: oneSettingTtl = \(oneSettingTtl)")
-        }
-    }
-    @Published var oneSettingUseTos: Bool = false {
-        didSet {
-            UserDefaults.standard.set(oneSettingUseTos, forKey: "oneSettingUseTos")
-            SocLogger.debug("SocPingSharedObject: oneSettingUseTos = \(oneSettingUseTos)")
-        }
-    }
-    @Published var oneSettingTos: Int = 0 {
-        didSet {
-            UserDefaults.standard.set(oneSettingTos, forKey: "oneSettingTos")
-            SocLogger.debug("SocPingSharedObject: oneSettingTos = \(oneSettingTos)")
-        }
-    }
-    @Published var oneSettingDontroute: Bool = false {
-        didSet {
-            UserDefaults.standard.set(oneSettingDontroute, forKey: "oneSettingDontroute")
-            SocLogger.debug("SocPingSharedObject: oneSettingDontroute = \(oneSettingDontroute)")
-        }
-    }
-    @Published var oneSettingNoLoop: Bool = false {
-        didSet {
-            UserDefaults.standard.set(oneSettingNoLoop, forKey: "oneSettingNoLoop")
-            SocLogger.debug("SocPingSharedObject: oneSettingNoLoop = \(oneSettingNoLoop)")
-        }
-    }
-    @Published var oneSettingUseSrcIf: Bool = false {
-        didSet {
-            UserDefaults.standard.set(oneSettingUseSrcIf, forKey: "oneSettingUseSrcIf")
-            SocLogger.debug("SocPingSharedObject: oneSettingUseSrcIf = \(oneSettingUseSrcIf)")
-        }
-    }
-    @Published var oneSettingInterface: Int = SocPingInterface.deviceTypeLoopback {
-        didSet {
-            UserDefaults.standard.set(oneSettingInterface, forKey: "oneSettingInterface")
-            SocLogger.debug("SocPingSharedObject: oneSettingInterface = \(oneSettingInterface)")
-        }
-    }
-    @Published var oneSettingUseLsrr: Bool = false {
-        didSet {
-            UserDefaults.standard.set(oneSettingUseLsrr, forKey: "oneSettingUseLsrr")
-            SocLogger.debug("SocPingSharedObject: oneSettingUseLsrr = \(oneSettingUseLsrr)")
-            if oneSettingUseLsrr && oneSettingUseRr {
-                oneSettingUseRr = false
-                UserDefaults.standard.set(oneSettingUseRr, forKey: "oneSettingUseRr")
-                SocLogger.debug("SocPingSharedObject: oneSettingUseRr = \(oneSettingUseRr)")
-            }
-        }
-    }
-    @Published var oneSettingUseRr: Bool = false {
-        didSet {
-            UserDefaults.standard.set(oneSettingUseRr, forKey: "oneSettingUseRr")
-            SocLogger.debug("SocPingSharedObject: oneSettingUseRr = \(oneSettingUseRr)")
-            if oneSettingUseRr && oneSettingUseLsrr {
-                oneSettingUseLsrr = false
-                UserDefaults.standard.set(oneSettingUseLsrr, forKey: "oneSettingUseLsrr")
-                SocLogger.debug("SocPingSharedObject: oneSettingUseLsrr = \(oneSettingUseLsrr)")
             }
         }
     }
@@ -396,6 +252,150 @@ final class SocPingSharedObject: ObservableObject {
         }
     }
     
+    //===== One Ping =====
+    @Published var oneSettingVerbose: Bool = false {
+        didSet {
+            UserDefaults.standard.set(oneSettingVerbose, forKey: "oneSettingVerbose")
+            SocLogger.debug("SocPingSharedObject: oneSettingVerbose = \(oneSettingVerbose)")
+        }
+    }
+    @Published var oneSettingIpProto: Int32 = IPPROTO_ICMP {  // 0:ICMP, 1:UDP
+        didSet {
+            UserDefaults.standard.set(Int(oneSettingIpProto), forKey: "oneSettingIpProto")
+            SocLogger.debug("SocPingSharedObject: oneSettingIpProto = \(oneSettingIpProto)")
+        }
+    }
+    @Published var oneSettingIdType: Int = SocPingEcho.valueTypeDefault {
+        didSet {
+            UserDefaults.standard.set(oneSettingIdType, forKey: "oneSettingIdType")
+            SocLogger.debug("SocPingSharedObject: oneSettingIdType = \(oneSettingIdType)")
+        }
+    }
+    @Published var oneSettingIcmpId: Int = 0 {
+        didSet {
+            UserDefaults.standard.set(oneSettingIcmpId, forKey: "oneSettingIcmpId")
+            SocLogger.debug("SocPingSharedObject: oneSettingIcmpId = \(oneSettingIcmpId)")
+        }
+    }
+    @Published var oneSettingSeqType: Int = SocPingEcho.valueTypeDefault {
+        didSet {
+            UserDefaults.standard.set(oneSettingSeqType, forKey: "oneSettingSeqType")
+            SocLogger.debug("SocPingSharedObject: oneSettingSeqType = \(oneSettingSeqType)")
+        }
+    }
+    @Published var oneSettingIcmpSeq: Int = 0 {
+        didSet {
+            UserDefaults.standard.set(oneSettingIcmpSeq, forKey: "oneSettingIcmpSeq")
+            SocLogger.debug("SocPingSharedObject: oneSettingIcmpSeq = \(oneSettingIcmpSeq)")
+        }
+    }
+    @Published var oneSettingPortType: Int = SocPingEcho.valueTypeDefault {
+        didSet {
+            UserDefaults.standard.set(oneSettingPortType, forKey: "oneSettingPortType")
+            SocLogger.debug("SocPingSharedObject: oneSettingPortType = \(oneSettingPortType)")
+        }
+    }
+    @Published var oneSettingUdpPort: Int = SocPingEcho.pingPortDefault {
+        didSet {
+            UserDefaults.standard.set(oneSettingUdpPort, forKey: "oneSettingUdpPort")
+            SocLogger.debug("SocPingSharedObject: oneSettingUdpPort = \(oneSettingUdpPort)")
+        }
+    }
+    @Published var oneSettingPayloadDataType: Int = SocPingEcho.payloadTypeC {
+        didSet {
+            UserDefaults.standard.set(oneSettingPayloadDataType, forKey: "oneSettingPayloadDataType")
+            SocLogger.debug("SocPingSharedObject: oneSettingPayloadDataType = \(oneSettingPayloadDataType)")
+        }
+    }
+    @Published var oneSettingPayloadSizeType: Int = SocPingEcho.valueTypeDefault {
+        didSet {
+            UserDefaults.standard.set(oneSettingPayloadSizeType, forKey: "oneSettingPayloadSizeType")
+            SocLogger.debug("SocPingSharedObject: oneSettingPayloadSizeType = \(oneSettingPayloadSizeType)")
+        }
+    }
+    @Published var oneSettingPayloadSize: Int = SocPingOnePinger.payloadSizeDefault {
+        didSet {
+            UserDefaults.standard.set(oneSettingPayloadSize, forKey: "oneSettingPayloadSize")
+            SocLogger.debug("SocPingSharedObject: oneSettingPayloadSize = \(oneSettingPayloadSize)")
+        }
+    }
+    @Published var oneSettingWaittime: Int = SocPingOnePinger.waittimeDefault {
+        didSet {
+            UserDefaults.standard.set(oneSettingWaittime, forKey: "oneSettingWaittime")
+            SocLogger.debug("SocPingSharedObject: oneSettingWaittime = \(oneSettingWaittime)")
+        }
+    }
+    @Published var oneSettingUseTtl: Bool = false {
+        didSet {
+            UserDefaults.standard.set(oneSettingUseTtl, forKey: "oneSettingUseTtl")
+            SocLogger.debug("SocPingSharedObject: oneSettingUseTtl = \(oneSettingUseTtl)")
+        }
+    }
+    @Published var oneSettingTtl: Int = SocPingOnePinger.ttlDefault {
+        didSet {
+            UserDefaults.standard.set(oneSettingTtl, forKey: "oneSettingTtl")
+            SocLogger.debug("SocPingSharedObject: oneSettingTtl = \(oneSettingTtl)")
+        }
+    }
+    @Published var oneSettingUseTos: Bool = false {
+        didSet {
+            UserDefaults.standard.set(oneSettingUseTos, forKey: "oneSettingUseTos")
+            SocLogger.debug("SocPingSharedObject: oneSettingUseTos = \(oneSettingUseTos)")
+        }
+    }
+    @Published var oneSettingTos: Int = 0 {
+        didSet {
+            UserDefaults.standard.set(oneSettingTos, forKey: "oneSettingTos")
+            SocLogger.debug("SocPingSharedObject: oneSettingTos = \(oneSettingTos)")
+        }
+    }
+    @Published var oneSettingDontroute: Bool = false {
+        didSet {
+            UserDefaults.standard.set(oneSettingDontroute, forKey: "oneSettingDontroute")
+            SocLogger.debug("SocPingSharedObject: oneSettingDontroute = \(oneSettingDontroute)")
+        }
+    }
+    @Published var oneSettingNoLoop: Bool = false {
+        didSet {
+            UserDefaults.standard.set(oneSettingNoLoop, forKey: "oneSettingNoLoop")
+            SocLogger.debug("SocPingSharedObject: oneSettingNoLoop = \(oneSettingNoLoop)")
+        }
+    }
+    @Published var oneSettingUseSrcIf: Bool = false {
+        didSet {
+            UserDefaults.standard.set(oneSettingUseSrcIf, forKey: "oneSettingUseSrcIf")
+            SocLogger.debug("SocPingSharedObject: oneSettingUseSrcIf = \(oneSettingUseSrcIf)")
+        }
+    }
+    @Published var oneSettingInterface: Int = SocPingInterface.deviceTypeLoopback {
+        didSet {
+            UserDefaults.standard.set(oneSettingInterface, forKey: "oneSettingInterface")
+            SocLogger.debug("SocPingSharedObject: oneSettingInterface = \(oneSettingInterface)")
+        }
+    }
+    @Published var oneSettingUseLsrr: Bool = false {
+        didSet {
+            UserDefaults.standard.set(oneSettingUseLsrr, forKey: "oneSettingUseLsrr")
+            SocLogger.debug("SocPingSharedObject: oneSettingUseLsrr = \(oneSettingUseLsrr)")
+            if oneSettingUseLsrr && oneSettingUseRr {
+                oneSettingUseRr = false
+                UserDefaults.standard.set(oneSettingUseRr, forKey: "oneSettingUseRr")
+                SocLogger.debug("SocPingSharedObject: oneSettingUseRr = \(oneSettingUseRr)")
+            }
+        }
+    }
+    @Published var oneSettingUseRr: Bool = false {
+        didSet {
+            UserDefaults.standard.set(oneSettingUseRr, forKey: "oneSettingUseRr")
+            SocLogger.debug("SocPingSharedObject: oneSettingUseRr = \(oneSettingUseRr)")
+            if oneSettingUseRr && oneSettingUseLsrr {
+                oneSettingUseLsrr = false
+                UserDefaults.standard.set(oneSettingUseLsrr, forKey: "oneSettingUseLsrr")
+                SocLogger.debug("SocPingSharedObject: oneSettingUseLsrr = \(oneSettingUseLsrr)")
+            }
+        }
+    }
+        
     func getAgreementDate() -> String {
         let value = UserDefaults.standard.object(forKey: "agreementDate")
         guard let date = value as? Date else {
@@ -458,41 +458,6 @@ final class SocPingSharedObject: ObservableObject {
         }
         appSettingDebugEnabled = UserDefaults.standard.bool(forKey: "appSettingDebugEnabled")
         
-        //===== One Ping =====
-        oneSettingVerbose = UserDefaults.standard.bool(forKey: "oneSettingVerbose")
-        if UserDefaults.standard.object(forKey: "oneSettingIpProto") != nil {  //Default is not 0
-            let intValue = UserDefaults.standard.integer(forKey: "oneSettingIpProto")
-            oneSettingIpProto = Int32(intValue)
-        }
-        oneSettingIdType = UserDefaults.standard.integer(forKey: "oneSettingIdType")
-        oneSettingIcmpId = UserDefaults.standard.integer(forKey: "oneSettingIcmpId")
-        oneSettingSeqType = UserDefaults.standard.integer(forKey: "oneSettingSeqType")
-        oneSettingIcmpSeq = UserDefaults.standard.integer(forKey: "oneSettingIcmpSeq")
-        oneSettingPortType = UserDefaults.standard.integer(forKey: "oneSettingPortType")
-        oneSettingUdpPort = UserDefaults.standard.integer(forKey: "oneSettingUdpPort")
-        if UserDefaults.standard.object(forKey: "oneSettingPayloadDataType") != nil {  //Default is not 0
-            oneSettingPayloadDataType = UserDefaults.standard.integer(forKey: "oneSettingPayloadDataType")
-        }
-        oneSettingPayloadSizeType = UserDefaults.standard.integer(forKey: "oneSettingPayloadSizeType")
-        if UserDefaults.standard.object(forKey: "oneSettingPayloadSize") != nil {  //Default is not 0
-            oneSettingPayloadSize = UserDefaults.standard.integer(forKey: "oneSettingPayloadSize")
-        }
-        if UserDefaults.standard.object(forKey: "oneSettingWaittime") != nil {  //Default is not 0
-            oneSettingWaittime = UserDefaults.standard.integer(forKey: "oneSettingWaittime")
-        }
-        oneSettingUseTtl = UserDefaults.standard.bool(forKey: "oneSettingUseTtl")
-        if UserDefaults.standard.object(forKey: "oneSettingTtl") != nil {  //Default is not 0
-            oneSettingTtl = UserDefaults.standard.integer(forKey: "oneSettingTtl")
-        }
-        oneSettingUseTos = UserDefaults.standard.bool(forKey: "oneSettingUseTos")
-        oneSettingTos = UserDefaults.standard.integer(forKey: "oneSettingTos")
-        oneSettingDontroute = UserDefaults.standard.bool(forKey: "oneSettingDontroute")
-        oneSettingNoLoop = UserDefaults.standard.bool(forKey: "oneSettingNoLoop")
-        oneSettingUseSrcIf = UserDefaults.standard.bool(forKey: "oneSettingUseSrcIf")
-        oneSettingInterface = UserDefaults.standard.integer(forKey: "oneSettingInterface")
-        oneSettingUseLsrr = UserDefaults.standard.bool(forKey: "oneSettingUseLsrr")
-        oneSettingUseRr = UserDefaults.standard.bool(forKey: "oneSettingUseRr")
-
         //===== Ping =====
         if UserDefaults.standard.object(forKey: "pingSettingPayloadDataType") != nil {  //Default is not 0
             pingSettingPayloadDataType = UserDefaults.standard.integer(forKey: "pingSettingPayloadDataType")
@@ -558,6 +523,41 @@ final class SocPingSharedObject: ObservableObject {
             traceSettingNameResolved = UserDefaults.standard.bool(forKey: "traceSettingNameResolved")
         }
         
+        //===== One Ping =====
+        oneSettingVerbose = UserDefaults.standard.bool(forKey: "oneSettingVerbose")
+        if UserDefaults.standard.object(forKey: "oneSettingIpProto") != nil {  //Default is not 0
+            let intValue = UserDefaults.standard.integer(forKey: "oneSettingIpProto")
+            oneSettingIpProto = Int32(intValue)
+        }
+        oneSettingIdType = UserDefaults.standard.integer(forKey: "oneSettingIdType")
+        oneSettingIcmpId = UserDefaults.standard.integer(forKey: "oneSettingIcmpId")
+        oneSettingSeqType = UserDefaults.standard.integer(forKey: "oneSettingSeqType")
+        oneSettingIcmpSeq = UserDefaults.standard.integer(forKey: "oneSettingIcmpSeq")
+        oneSettingPortType = UserDefaults.standard.integer(forKey: "oneSettingPortType")
+        oneSettingUdpPort = UserDefaults.standard.integer(forKey: "oneSettingUdpPort")
+        if UserDefaults.standard.object(forKey: "oneSettingPayloadDataType") != nil {  //Default is not 0
+            oneSettingPayloadDataType = UserDefaults.standard.integer(forKey: "oneSettingPayloadDataType")
+        }
+        oneSettingPayloadSizeType = UserDefaults.standard.integer(forKey: "oneSettingPayloadSizeType")
+        if UserDefaults.standard.object(forKey: "oneSettingPayloadSize") != nil {  //Default is not 0
+            oneSettingPayloadSize = UserDefaults.standard.integer(forKey: "oneSettingPayloadSize")
+        }
+        if UserDefaults.standard.object(forKey: "oneSettingWaittime") != nil {  //Default is not 0
+            oneSettingWaittime = UserDefaults.standard.integer(forKey: "oneSettingWaittime")
+        }
+        oneSettingUseTtl = UserDefaults.standard.bool(forKey: "oneSettingUseTtl")
+        if UserDefaults.standard.object(forKey: "oneSettingTtl") != nil {  //Default is not 0
+            oneSettingTtl = UserDefaults.standard.integer(forKey: "oneSettingTtl")
+        }
+        oneSettingUseTos = UserDefaults.standard.bool(forKey: "oneSettingUseTos")
+        oneSettingTos = UserDefaults.standard.integer(forKey: "oneSettingTos")
+        oneSettingDontroute = UserDefaults.standard.bool(forKey: "oneSettingDontroute")
+        oneSettingNoLoop = UserDefaults.standard.bool(forKey: "oneSettingNoLoop")
+        oneSettingUseSrcIf = UserDefaults.standard.bool(forKey: "oneSettingUseSrcIf")
+        oneSettingInterface = UserDefaults.standard.integer(forKey: "oneSettingInterface")
+        oneSettingUseLsrr = UserDefaults.standard.bool(forKey: "oneSettingUseLsrr")
+        oneSettingUseRr = UserDefaults.standard.bool(forKey: "oneSettingUseRr")
+        
         SocSocket.initSoc()
         SocLogger.setTraceLevel(appSettingTraceLevel)
         if appSettingDebugEnabled {
@@ -614,28 +614,6 @@ final class SocPingSharedObject: ObservableObject {
             }
         }
         SocLogger.debug("Load Settings:")
-        SocLogger.debug("oneSettingVerbose = \(oneSettingVerbose)")
-        SocLogger.debug("oneSettingIpProto = \(oneSettingIpProto)")
-        SocLogger.debug("oneSettingIdType = \(oneSettingIdType)")
-        SocLogger.debug("oneSettingIcmpId = \(oneSettingIcmpId)")
-        SocLogger.debug("oneSettingSeqType = \(oneSettingSeqType)")
-        SocLogger.debug("oneSettingIcmpSeq = \(oneSettingIcmpSeq)")
-        SocLogger.debug("oneSettingPortType = \(oneSettingPortType)")
-        SocLogger.debug("oneSettingUdpPort = \(oneSettingUdpPort)")
-        SocLogger.debug("oneSettingPayloadDataType = \(oneSettingPayloadDataType)")
-        SocLogger.debug("oneSettingPayloadSizeType = \(oneSettingPayloadSizeType)")
-        SocLogger.debug("oneSettingPayloadSize = \(oneSettingPayloadSize)")
-        SocLogger.debug("oneSettingWaittime = \(oneSettingWaittime)")
-        SocLogger.debug("oneSettingUseTtl = \(oneSettingUseTtl)")
-        SocLogger.debug("oneSettingTtl = \(oneSettingTtl)")
-        SocLogger.debug("oneSettingUseTos = \(oneSettingUseTos)")
-        SocLogger.debug("oneSettingTos = \(oneSettingTos)")
-        SocLogger.debug("oneSettingNoLoop = \(oneSettingNoLoop)")
-        SocLogger.debug("oneSettingDontroute = \(oneSettingDontroute)")
-        SocLogger.debug("oneSettingUseSrcIf = \(oneSettingUseSrcIf)")
-        SocLogger.debug("oneSettingInterface = \(oneSettingInterface)")
-        SocLogger.debug("oneSettingUseLsrr = \(oneSettingUseLsrr)")
-        SocLogger.debug("oneSettingUseRr = \(oneSettingUseRr)")
         SocLogger.debug("pingSettingPayloadDataType = \(pingSettingPayloadDataType)")
         SocLogger.debug("pingSettingPayloadSizeType = \(pingSettingPayloadSizeType)")
         SocLogger.debug("pingSettingPayloadSize = \(pingSettingPayloadSize)")
@@ -664,6 +642,28 @@ final class SocPingSharedObject: ObservableObject {
         SocLogger.debug("traceSettingInterface = \(traceSettingInterface)")
         SocLogger.debug("traceSettingUseLsrr = \(traceSettingUseLsrr)")
         SocLogger.debug("traceSettingNameResolved = \(traceSettingNameResolved)")
+        SocLogger.debug("oneSettingVerbose = \(oneSettingVerbose)")
+        SocLogger.debug("oneSettingIpProto = \(oneSettingIpProto)")
+        SocLogger.debug("oneSettingIdType = \(oneSettingIdType)")
+        SocLogger.debug("oneSettingIcmpId = \(oneSettingIcmpId)")
+        SocLogger.debug("oneSettingSeqType = \(oneSettingSeqType)")
+        SocLogger.debug("oneSettingIcmpSeq = \(oneSettingIcmpSeq)")
+        SocLogger.debug("oneSettingPortType = \(oneSettingPortType)")
+        SocLogger.debug("oneSettingUdpPort = \(oneSettingUdpPort)")
+        SocLogger.debug("oneSettingPayloadDataType = \(oneSettingPayloadDataType)")
+        SocLogger.debug("oneSettingPayloadSizeType = \(oneSettingPayloadSizeType)")
+        SocLogger.debug("oneSettingPayloadSize = \(oneSettingPayloadSize)")
+        SocLogger.debug("oneSettingWaittime = \(oneSettingWaittime)")
+        SocLogger.debug("oneSettingUseTtl = \(oneSettingUseTtl)")
+        SocLogger.debug("oneSettingTtl = \(oneSettingTtl)")
+        SocLogger.debug("oneSettingUseTos = \(oneSettingUseTos)")
+        SocLogger.debug("oneSettingTos = \(oneSettingTos)")
+        SocLogger.debug("oneSettingNoLoop = \(oneSettingNoLoop)")
+        SocLogger.debug("oneSettingDontroute = \(oneSettingDontroute)")
+        SocLogger.debug("oneSettingUseSrcIf = \(oneSettingUseSrcIf)")
+        SocLogger.debug("oneSettingInterface = \(oneSettingInterface)")
+        SocLogger.debug("oneSettingUseLsrr = \(oneSettingUseLsrr)")
+        SocLogger.debug("oneSettingUseRr = \(oneSettingUseRr)")
         SocLogger.debug("Check Device Configuration:")
         SocLogger.debug("WiFi Address = \(interfaces[SocPingInterface.deviceTypeWifi].inet.addr)")
         SocLogger.debug("Cellurar Address = \(interfaces[SocPingInterface.deviceTypeCellurar].inet.addr)")

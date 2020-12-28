@@ -27,7 +27,7 @@ struct SocPingOnePinger: View {
     static let ttlDefault = 64          // Standard value for common ping command
     
     var isInProgress: Bool {
-        return self.object.isProcessing && self.object.runningActionType == SocPingList.actionTypeOnePing
+        return self.object.isProcessing && self.object.runningActionType == SocPingEcho.actionTypeOnePing
     }
     
     var body: some View {
@@ -46,7 +46,7 @@ struct SocPingOnePinger: View {
                     }
                     if self.object.isProcessing {
                         self.alertTitle = NSLocalizedString("Message_Multiple_actions_not_possible", comment: "")
-                        self.alertMessage = SocPingList.actionNames[self.object.runningActionType] + " in progress"
+                        self.alertMessage = SocPingEcho.actionNames[self.object.runningActionType] + " in progress"
                         self.isPopAlert = true
                         return
                     }
@@ -82,7 +82,7 @@ struct SocPingOnePinger: View {
                     }
 
                     self.object.isProcessing = true
-                    self.object.runningActionType = SocPingList.actionTypeOnePing
+                    self.object.runningActionType = SocPingEcho.actionTypeOnePing
                     self.isInterrupted = false
                     
                     DispatchQueue.global().async {
@@ -595,10 +595,6 @@ struct SocPingOnePinger: View {
     
     func reset() {
         self.text = ""
-        if object.oneSettingVerbose {
-            self.text += SocLogger.dateFormatter.string(from: Date())
-            self.text += "\n"
-        }
         self.cntSent = 0
         self.cntReceived = 0
         self.progress = 0.0
