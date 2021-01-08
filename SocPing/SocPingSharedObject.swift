@@ -8,6 +8,7 @@
 import SwiftUI
 
 final class SocPingSharedObject: ObservableObject {
+    @Published var appVersion: String = ""
     @Published var orientation: UIInterfaceOrientation = .unknown
     @Published var isProcessing: Bool = false
     @Published var runningActionType: Int = SocPingEcho.actionTypeOnePing  // initial is dummy
@@ -50,7 +51,7 @@ final class SocPingSharedObject: ObservableObject {
             SocLogger.debug("SocPingSharedObject: appSettingScreenColorInverted = \(appSettingScreenColorInverted)")
         }
     }
-    @Published var appSettingTraceLevel: Int = SocLogger.traceLevelCall {
+    @Published var appSettingTraceLevel: Int = SocLogger.traceLevelNoData {
         didSet {
             UserDefaults.standard.set(appSettingTraceLevel, forKey: "appSettingTraceLevel")
             SocLogger.debug("SocPingSharedObject: appSettingTraceLevel = \(appSettingTraceLevel)")
@@ -422,6 +423,7 @@ final class SocPingSharedObject: ObservableObject {
         if stringsArray.count > 0 {
             SocLogger.debug("SocPingSharedObject.saveAddresses: \(stringsArray.count) addresses")
             UserDefaults.standard.set(stringsArray, forKey: "addresses")
+            SocLogger.debug("SocPingSharedObject.saveAddresses: done")
         }
         else {
             SocLogger.debug("SocPingSharedObject.saveAddresses: removeObject")
@@ -453,9 +455,7 @@ final class SocPingSharedObject: ObservableObject {
         }
         appSettingIdleTimerDisabled = UserDefaults.standard.bool(forKey: "appSettingIdleTimerDisabled")
         appSettingScreenColorInverted = UserDefaults.standard.bool(forKey: "appSettingScreenColorInverted")
-        if UserDefaults.standard.object(forKey: "appSettingTraceLevel") != nil {  //Default is not 0
-            appSettingTraceLevel = UserDefaults.standard.integer(forKey: "appSettingTraceLevel")
-        }
+        appSettingTraceLevel = UserDefaults.standard.integer(forKey: "appSettingTraceLevel")
         appSettingDebugEnabled = UserDefaults.standard.bool(forKey: "appSettingDebugEnabled")
         
         //===== Ping =====
@@ -563,6 +563,10 @@ final class SocPingSharedObject: ObservableObject {
         if appSettingDebugEnabled {
             SocLogger.enableDebug()
         }
+        if let string = Bundle.main.infoDictionary!["CFBundleShortVersionString"] as? String {
+            appVersion = string
+        }
+        SocLogger.debug("App Version = \(appVersion)")
         SocLogger.debug("Agreed the Terms of Service: \(self.getAgreementDate())")
         for i in 0 ..< self.interfaces.count {
             self.interfaces[i].ifconfig()

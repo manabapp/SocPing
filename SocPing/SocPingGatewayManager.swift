@@ -155,27 +155,18 @@ fileprivate struct GwAddressRaw: View {
     }
 
     var detail: Text? {
-        if object.appSettingDescription {
-            if self.address.family != AF_INET {
-                return Text("Description_Unexpected_address")
-            }
-            if !self.address.hostName.isEmpty {
-                return Text(self.address.hostName)
-            }
-            else if UInt32(inet_addr(self.address.addr)) == 0 {
-                return Text("Description_ANY_address")
-            }
-            else {
-                return Text("Description_Unknown_host")
-            }
+        if self.address.hasHostName {
+            return Text(self.address.hostName)
         }
-        else {
-            if self.address.family == AF_INET && !self.address.hostName.isEmpty {
-                return Text(self.address.hostName)
-            }
-            else {
-                return nil
-            }
+        if !object.appSettingDescription {
+            return nil
         }
+        if self.address.isAny {
+            return Text("Description_ANY_address")
+        }
+        if self.address.isPrivate {
+            return Text("Description_Private_address")
+        }
+        return Text("Description_Unknown_host")
     }
 }

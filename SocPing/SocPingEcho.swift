@@ -174,7 +174,7 @@ struct SocPingEcho {
             }
         }
         if self.payloadIncr > 0 && self.payloadLen < self.payloadMaxLen {
-            self.payloadLen += self.payloadIncr * self.counter
+            self.payloadLen += self.payloadIncr
             if self.payloadLen > self.payloadMaxLen {
                 self.payloadLen = self.payloadMaxLen
             }

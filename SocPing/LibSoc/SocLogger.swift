@@ -16,11 +16,11 @@ class SocLogger {
     static var timeFormatter = DateFormatter()
     static var response: Double = 0.0
     static var isDebug: Bool = false    // output with debug()
-    static var traceLevel: Int = traceLevelNone
+    static var traceLevel: Int = traceLevelNoData
     
-    static let traceLevelNone: Int = 0  // Not output
-    static let traceLevelCall: Int = 1  // output with trace()
-    static let traceLevelDump: Int = 2  // output with trace() and dataDump()
+    static let traceLevelNoData: Int = 0  // No data in send/recv system call
+    static let traceLevelInLine: Int = 1  // Includes first 16 bytes into the line of send/recv system call
+    static let traceLevelHexDump: Int = 2  // Hex dump in addtion to send/recv system call
     
     static let logMaxLines = 10000
     static let dumpMaxSize = 512
@@ -46,7 +46,7 @@ class SocLogger {
         dateFormatter.calendar = Calendar(identifier: .gregorian)
         dateFormatter.locale = Locale(identifier: "C")
         dateFormatter.timeZone = .current
-        dateFormatter.dateFormat = " (MMM dd, YYYY) "
+        dateFormatter.dateFormat = "MMM dd, yyyy"
         SocLogger.logBuffer = ""
         SocLogger.logCount = 0
         isStopLog = false
@@ -61,32 +61,40 @@ class SocLogger {
     }
     
     static func setTraceLevel(_ level: Int) {
-        if traceLevel < SocLogger.traceLevelNone || traceLevel > SocLogger.traceLevelDump {
-            SocLogger.traceLevel = SocLogger.traceLevelNone
+        if traceLevel >= SocLogger.traceLevelNoData && traceLevel <= SocLogger.traceLevelHexDump {
+            SocLogger.traceLevel = level
         }
-        SocLogger.traceLevel = level
     }
     
     static func getLog() -> String {
         return SocLogger.logBuffer
     }
     
-    static func resetLog() {
+    static func clearLog() {
         SocLogger.logBuffer = ""
         SocLogger.logCount = 0
         SocLogger.isStopLog = false
-        SocLogger.push("Reset")
+        SocLogger.push()
     }
     
     static func getCount() -> Int {
         return SocLogger.logCount
     }
     
+    static func upCount() {
+        Self.logCount += 1
+        if !Self.isStopLog && Self.logCount >= Self.logMaxLines {
+            Self.push("Reached the limit of log lines")
+            Self.logCount += 1
+            Self.isStopLog = true
+        }
+    }
+
     static func getHdrAscii(data: Data, length: Int) -> String {
         if data.count == 0 {
             return "\"\""
         }
-        if SocLogger.traceLevel == SocLogger.traceLevelDump {
+        if SocLogger.traceLevel != SocLogger.traceLevelInLine {
             return "<DATA>"
         }
         
@@ -134,15 +142,24 @@ class SocLogger {
     }
     
     // Internal log for LibSoc
-    static func push(_ text: String) {
+    static func push(_ text: String = "") {
 #if DEBUG
-        print(text)
+        if !text.isEmpty {
+            print(text)
+        }
 #endif
         SocLogger.logBuffer += SocLogger.timeFormatter.string(from: Date())
+        SocLogger.logBuffer += " "
         SocLogger.logBuffer += SocLogger.dateFormatter.string(from: Date())
-        SocLogger.logBuffer += text
-        SocLogger.logBuffer += "\n"
-        SocLogger.logCount += 1
+        SocLogger.logBuffer += " - \(TimeZone.current)\n"
+        Self.upCount()
+        if !text.isEmpty {
+            SocLogger.logBuffer += SocLogger.timeFormatter.string(from: Date())
+            SocLogger.logBuffer += " "
+            SocLogger.logBuffer += text
+            SocLogger.logBuffer += "\n"
+            Self.upCount()
+        }
     }
     
     // Always outputs important information
@@ -154,11 +171,7 @@ class SocLogger {
         SocLogger.logBuffer += " [ERROR___] "
         SocLogger.logBuffer += text
         SocLogger.logBuffer += "\n"
-        SocLogger.logCount += 1
-        if SocLogger.logCount >= SocLogger.logMaxLines {
-            SocLogger.push("Reached the limit of log lines")
-            SocLogger.isStopLog = true
-        }
+        Self.upCount()
     }
     
     // If only debug enabled, outputs important information
@@ -173,11 +186,7 @@ class SocLogger {
         SocLogger.logBuffer += " [--------] "
         SocLogger.logBuffer += text
         SocLogger.logBuffer += "\n"
-        SocLogger.logCount += 1
-        if SocLogger.logCount >= SocLogger.logMaxLines {
-            SocLogger.push("Reached the limit of log lines")
-            SocLogger.isStopLog = true
-        }
+        Self.upCount()
     }
     
     static func trace(funcName: String, argsText: String, retval: Int32) {
@@ -189,29 +198,25 @@ class SocLogger {
 #if DEBUG
         print(text)
 #endif
-        if SocLogger.isStopLog || SocLogger.traceLevel < SocLogger.traceLevelCall {
+        if SocLogger.isStopLog {
             return
         }
         SocLogger.logBuffer += SocLogger.timeFormatter.string(from: Date())
         SocLogger.logBuffer += String(format: " [%.6f] ", SocLogger.response)
         SocLogger.logBuffer += text
         SocLogger.logBuffer += "\n"
-        SocLogger.logCount += 1
-        if SocLogger.logCount >= SocLogger.logMaxLines {
-            SocLogger.push("Reached the limit of log lines")
-            SocLogger.isStopLog = true
-        }
+        Self.upCount()
     }
     
     // Not output into console
     static func dataDump(data: Data, length: Int, label: String = "") {
-        if length == 0 || SocLogger.isStopLog || SocLogger.traceLevel < SocLogger.traceLevelDump {
+        if length == 0 || SocLogger.isStopLog || SocLogger.traceLevel < SocLogger.traceLevelHexDump {
             return
         }
         if !label.isEmpty {
             SocLogger.logBuffer += label
             SocLogger.logBuffer += "\n"
-            SocLogger.logCount += 1
+            Self.upCount()
         }
         var index: Int = 0
         var num: Int = 0
@@ -223,7 +228,7 @@ class SocLogger {
             if index >= SocLogger.dumpMaxSize {
                 dumpString += "=== MORE ===\n"
                 SocLogger.logBuffer += dumpString
-                SocLogger.logCount += 1
+                Self.upCount()
                 return
             }
             detailString = "    "
@@ -251,7 +256,7 @@ class SocLogger {
             dumpString += detailString
             dumpString += "\n"
             SocLogger.logBuffer += dumpString
-            SocLogger.logCount += 1
+            Self.upCount()
         }
     }
 }

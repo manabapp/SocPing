@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta name="viewport" content="width=375,initial-scale=1,user-scalable=yes">
+<title>SocPing</title>
+<link rel="stylesheet" href="apps.css">
+</head>
+<body>
+<center>
+<img src="img/SocPing_splash.png" width=130 height=130><br>
+<div class="title">SocPing</div>
+<div class="version">version 1.0.0</div>
+
+<p>
+
+It's the most low-level and the most basic Ping.
+<div class="yoko">
+    <div><img class="screenshotimg" src="img/ScreenShot1.jpeg" alt="image1" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot2.jpeg" alt="image2" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot3.jpeg" alt="image3" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot4.jpeg" alt="image4" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot5.jpeg" alt="image5" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot6.jpeg" alt="image6" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot7.jpeg" alt="image7" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot8.jpeg" alt="image8" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot9.jpeg" alt="image9" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot10.jpeg" alt="image10" width=276px height=597px></div>
+</div>
+
+<p>
+
+<div id="p1">
+    <a onclick="showDescription();">Learn more</a>
+</div>
+<div id="p2">
+    <a onclick="hideDescription();">Hide text</a><br>
+    <p align="left">
+    SocPing is the mobile app that executes Ping and Traceroute with low-level POSIX Socket API. Supports both ICMP and UDP, and provides same function as a standard command on host OS.<br><br>
+    
+    <span class="functions">Ping</span><br>
+    Monitors the state changes of host or network by continuously transmitting ECHOes. You can check statistics in real time such as response (RTT) and packet loss rate.<br><br>
+    
+    <span class="functions">Traceroute</span><br>
+    Checks the route information to the destination host while incrementing the time to live (TTL).<br><br>
+    
+    <span class="functions">One Ping</span><br>
+    Sends an ECHO only once to check reachability to the destination host. You can investigate the problem with various options if "<b>Ping</b>" or "<b>Traceroute</b>" is unresponsive.<br><br>
+    
+    This app's strong point is the visualization by "<b>Verbose mode</b>" and "<b>System call trace</b>".<br>
+    In verbose mode, outputs the binary dump of transmitting/receiving data and analyzes protocol header of the packets. You can monitor traffic data even on a mobile device that does not have the function of packet capture.<br>
+    The app can also collect system call trace equivalent to Linux strace. You can check how Ping or Traceroute calls and handles the POSIX Socket API.<br><br>
+    
+    SocPing will be useful for initial investigation of various problems that occur on the Internet and the Cloud. We hope that you will use this app for monitoring the network status and troubleshooting.
+    </p>
+    <a onclick="hideDescription();">Hide text</a>
+</div>
+
+<p>
+<br>
+<!-- refer: https://primer.style/octicons/ -->
+<a href="../Apps/index.html"><img src="img/home.svg" height=24></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="https://github.com/manabapp/SocPing"><img src="img/mark-github.svg" height=24></a>
+
+<p>
+
+<!-- refer: https://qiita.com/macoril/items/48125b2a0a48339b3693 -->
+<!-- refer: https://developer.apple.com/jp/app-store/marketing/guidelines/ -->
+<a href="https://itunes.apple.com/jp/app/id[アプリのApple ID]?mt=8"><img src="img/AppStore_US.svg"></a><br>
+<span class="trademarks">Apple, the Apple logo are registered trademarks of Apple Inc.</span>
+
+<p>
+
+<div class="copyright">
+    Copyright © 2021 manabapp. All rights reserved.<br>
+    <a class="footer" href="TermsOfService.html">Terms</a>&nbsp;&nbsp;-&nbsp;
+    <a class="footer" href="PrivacyPolicy.html">Privacy</a>&nbsp;&nbsp;-&nbsp;
+    English | <a class="footer" href="index_ja.html">Japanese</a>
+</div>
+
+<p>
+
+</center>
+<script>
+document.getElementById("p1").style.display = "block";
+document.getElementById("p2").style.display = "none";
+function showDescription(){
+    document.getElementById("p1").style.display = "none";
+    document.getElementById("p2").style.display = "block";
+}
+function hideDescription(){
+    document.getElementById("p1").style.display = "block";
+    document.getElementById("p2").style.display = "none";
+}
+</script>
+</body>
+</html>

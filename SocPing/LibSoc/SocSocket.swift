@@ -32,9 +32,9 @@ struct SocSocket {
         signal(SIGPIPE, SIG_IGN)  // Prevent app aborted with SIGPIPE when sending to connection closed on remote side
         SocLogger.startLog()
 #if DEBUG
-        SocLogger.push("Start process[\(getpid())] for DEBUG vers.")
+        SocLogger.push("Start (pid:\(getpid())) for DEBUG vers.")
 #else
-        SocLogger.push("Start process[\(getpid())]")
+        SocLogger.push("Start (pid:\(getpid()))")
 #endif
     }
     

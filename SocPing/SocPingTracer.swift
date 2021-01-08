@@ -104,7 +104,7 @@ struct SocPingTracer: View {
                     
                     DispatchQueue.global().async {
                         do {
-                            try self.preset(echo: &echo, socket: socket, udpSocket: udpSocket)
+                            self.setEchoParam(echo: &echo)
                             
                             var msg = "traceroute to "
                             msg += self.address.hostName.isEmpty ? self.address.addr : self.address.hostName
@@ -118,6 +118,7 @@ struct SocPingTracer: View {
                             msg += "\(echo.payloadLen) byte packets"
                             self.outputAsync(msg)
                             
+                            try self.setSocketOption(echo: echo, socket: socket, udpSocket: udpSocket)
                             try self.action(echo: &echo, socket: socket, udpSocket: udpSocket)
                         }
                         catch let error as SocError {
@@ -170,11 +171,8 @@ struct SocPingTracer: View {
         .navigationBarBackButtonHidden(self.isInProgress)
     }
     
-    func preset(echo: inout SocPingEcho, socket: SocSocket, udpSocket: SocSocket) throws {
-        SocLogger.debug("SocPingTracer.preset: start")
-        //==============================================================
-        // Setting echo parameters
-        //==============================================================
+    func setEchoParam(echo: inout SocPingEcho) {
+        SocLogger.debug("SocPingPinger.setEchoParam: start")
         if echo.proto == IPPROTO_ICMP {
             echo.setId(UInt16(getpid() & 0xFFFF))
             echo.setSeq(0)
@@ -198,10 +196,11 @@ struct SocPingTracer: View {
             echo.setPayload(type: object.traceSettingPayloadDataType,
                             length: SocPingTracer.payloadSizeDefault)
         }
-        
-        //==============================================================
-        // Setting socket options
-        //==============================================================
+        SocLogger.debug("SocPingTracer.setEchoParam: done")
+    }
+
+    func setSocketOption(echo: SocPingEcho, socket: SocSocket, udpSocket: SocSocket) throws {
+        SocLogger.debug("SocPingTracer.setSocketOption: start")
         try socket.setsockopt(level: SOL_SOCKET, option: SO_RCVBUF, value: SocOptval(int: Int(IP_MAXPACKET) + 128))
         if object.traceSettingDontroute {
             if echo.proto == IPPROTO_ICMP {
@@ -249,9 +248,8 @@ struct SocPingTracer: View {
                 try udpSocket.setsockopt(level: IPPROTO_IP, option: IP_OPTIONS, value: SocOptval(data: data))
             }
         }
-        SocLogger.debug("SocPingTracer.preset: done")
+        SocLogger.debug("SocPingTracer.setSocketOption: done")
     }
-
     
     func action(echo: inout SocPingEcho, socket: SocSocket, udpSocket: SocSocket) throws {
         SocLogger.debug("SocPingTracer.action: start")
@@ -267,6 +265,10 @@ struct SocPingTracer: View {
             let msg = String(format: "%2d ", ttl)
             self.writeAsync(msg)
             for count in 0 ..< object.traceSettingProbes {
+                if self.isInterrupted {
+                    break loop
+                }
+                
                 if count > 0 && intervalUSec > 0 {
                     SocLogger.debug("SocPingTracer.action: usleep(\(intervalUSec))")
                     usleep(UInt32(intervalUSec));
@@ -474,7 +476,7 @@ struct SocPingTracer: View {
             }
         }
         if self.isInterrupted {
-            self.outputAsync("Terminated")
+            self.outputAsync(" Terminated")  // Only Traceroute, inserts blank 
         }
         SocLogger.debug("SocPingTracer.action: \(self.isInterrupted ? "interrupted" : "normal end")")
     }

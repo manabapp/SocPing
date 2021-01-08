@@ -87,7 +87,7 @@ struct SocPingOnePinger: View {
                     
                     DispatchQueue.global().async {
                         do {
-                            try self.preset(echo: &echo, socket: socket, udpSocket: udpSocket)
+                            self.setEchoParam(echo: &echo)
                             
                             var msg = "PING "
                             msg += self.address.hostName.isEmpty ? self.address.addr : self.address.hostName
@@ -95,6 +95,7 @@ struct SocPingOnePinger: View {
                             msg += "\(echo.payloadLen) data bytes"
                             self.outputAsync(msg)
                             
+                            try self.setSocketOption(echo: echo, socket: socket, udpSocket: udpSocket)
                             try self.action(echo: &echo, socket: socket, udpSocket: udpSocket)
                         }
                         catch let error as SocError {
@@ -147,11 +148,8 @@ struct SocPingOnePinger: View {
         .navigationBarBackButtonHidden(self.isInProgress)
     }
     
-    func preset(echo: inout SocPingEcho, socket: SocSocket, udpSocket: SocSocket) throws {
-        SocLogger.debug("SocPingOnePinger.preset: start")
-        //==============================================================
-        // Setting echo parameters
-        //==============================================================
+    func setEchoParam(echo: inout SocPingEcho) {
+        SocLogger.debug("SocPingOnePinger.setEchoParam: start")
         if echo.proto == IPPROTO_ICMP {
             switch object.oneSettingIdType {
             case SocPingEcho.valueTypeUserSet:
@@ -190,10 +188,11 @@ struct SocPingOnePinger: View {
             echo.setPayload(type: object.oneSettingPayloadDataType,
                             length: SocPingOnePinger.payloadSizeDefault)
         }
-        
-        //==============================================================
-        // Setting socket options
-        //==============================================================
+        SocLogger.debug("SocPingOnePinger.setEchoParam: done")
+    }
+    
+    func setSocketOption(echo: SocPingEcho, socket: SocSocket, udpSocket: SocSocket) throws {
+        SocLogger.debug("SocPingOnePinger.setSocketOption: start")
         try socket.setsockopt(level: SOL_SOCKET, option: SO_RCVBUF, value: SocOptval(int: Int(IP_MAXPACKET) + 128))
         try socket.setsockopt(level: SOL_SOCKET, option: SO_TIMESTAMP, value: SocOptval(bool: true))
         
@@ -284,13 +283,15 @@ struct SocPingOnePinger: View {
             else {
                 try udpSocket.setsockopt(level: IPPROTO_IP, option: IP_OPTIONS, value: SocOptval(data: data))
             }
-            DispatchQueue.main.async {
-                self.output()  // blank
-                self.output("IP Option: \(data!.count) bytes set")
-                self.dump(base: data!, length: data!.count)
-                self.output()  // blank
+            if object.oneSettingVerbose {
+                DispatchQueue.main.async {
+                    self.output()  // blank
+                    self.output("IP Option: \(data!.count) bytes set")
+                    self.dump(base: data!, length: data!.count)
+                    self.output()  // blank
+                }
+                printIpOptions(data!)
             }
-            printIpOptions(data!)
         }
         if object.oneSettingUseRr {
             var bytes = [UInt8](repeating: 0, count: MAX_IPOPTLEN)
@@ -305,15 +306,17 @@ struct SocPingOnePinger: View {
             else {
                 try udpSocket.setsockopt(level: IPPROTO_IP, option: IP_OPTIONS, value: SocOptval(data: data))
             }
-            DispatchQueue.main.async {
-                self.output()  // blank
-                self.output("IP Option: \(data!.count) bytes set")
-                self.dump(base: data!, length: data!.count)
-                self.output()  // blank
+            if object.oneSettingVerbose {
+                DispatchQueue.main.async {
+                    self.output()  // blank
+                    self.output("IP Option: \(data!.count) bytes set")
+                    self.dump(base: data!, length: data!.count)
+                    self.output()  // blank
+                }
+                printIpOptions(data!)
             }
-            printIpOptions(data!)
         }
-        SocLogger.debug("SocPingOnePinger.preset: done")
+        SocLogger.debug("SocPingOnePinger.setSocketOption: done")
     }
 
     func action(echo: inout SocPingEcho, socket: SocSocket, udpSocket: SocSocket) throws {
@@ -752,7 +755,7 @@ struct SocPingOnePinger: View {
                         cnt += 1
                         let inAddr = Data(bytes[i ..< i + 4]).withUnsafeBytes { $0.load(as: in_addr.self) }
                         let addr = String.init(cString: inet_ntoa(inAddr))
-                        self.output("         Route(\(cnt)): \(String(format: "%08x          ", inAddr.s_addr.bigEndian))(\(addr))")
+                        self.output("        Route(\(cnt)) : \(String(format: "%08x          ", inAddr.s_addr.bigEndian))(\(addr))")
                         debugMsg += "\(addr),"
                         i += 4  // size of in_addr
                     }

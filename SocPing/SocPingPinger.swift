@@ -106,7 +106,7 @@ struct SocPingPinger: View {
                     
                     DispatchQueue.global().async {
                         do {
-                            try self.preset(echo: &echo, socket: socket)
+                            self.setEchoParam(echo: &echo)
                             
                             var msg = "PING "
                             msg += echo.hostName.isEmpty ? echo.addr : echo.hostName
@@ -115,6 +115,7 @@ struct SocPingPinger: View {
                             msg += " data bytes"
                             self.outputAsync(msg)
                             
+                            try self.setSocketOption(echo: echo, socket: socket)
                             try self.action(echo: &echo, socket: socket)
                             self.statistics()
                         }
@@ -167,11 +168,8 @@ struct SocPingPinger: View {
         .navigationBarBackButtonHidden(self.isInProgress)
     }
     
-    func preset(echo: inout SocPingEcho, socket: SocSocket) throws {
-        SocLogger.debug("SocPingPinger.preset: start")
-        //==============================================================
-        // Setting echo parameters
-        //==============================================================
+    func setEchoParam(echo: inout SocPingEcho) {
+        SocLogger.debug("SocPingPinger.setEchoParam: start")
         echo.setId(UInt16(getpid() & 0xFFFF))
         echo.setSeq(0)
         
@@ -195,19 +193,20 @@ struct SocPingPinger: View {
         if object.isPingInfinitely {
             self.echoes = 0
         }
-        if object.isPingSweeping {
+        else if object.isPingSweeping {
             self.echoes = object.pingSweepingCount
         }
         else {
             self.echoes = object.pingSettingEchoes
         }
-        
-        //==============================================================
-        // Setting socket options
-        //==============================================================
+        SocLogger.debug("SocPingPinger.setEchoParam: done")
+    }
+
+    func setSocketOption(echo: SocPingEcho, socket: SocSocket) throws {
+        SocLogger.debug("SocPingPinger.setSocketOption: start")
         try socket.setsockopt(level: SOL_SOCKET, option: SO_RCVBUF, value: SocOptval(int: Int(IP_MAXPACKET) + 128))
         try socket.setsockopt(level: SOL_SOCKET, option: SO_TIMESTAMP, value: SocOptval(bool: true))
-        SocLogger.debug("SocPingPinger.preset: done")
+        SocLogger.debug("SocPingPinger.setSocketOption: done")
     }
 
     func action(echo: inout SocPingEcho, socket: SocSocket) throws {

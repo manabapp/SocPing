@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta name="viewport" content="width=375,initial-scale=1,user-scalable=yes">
+<title>SocPing (Japanese)</title>
+<link rel="stylesheet" href="apps.css">
+</head>
+<body>
+<center>
+<img src="img/SocPing_splash.png" width=130 height=130><br>
+<div class="title">SocPing</div>
+<div class="version">version 1.0.0</div>
+
+<p>
+
+これはもっとも低水準で最もベーシックな Ping です。
+<div class="yoko">
+    <div><img class="screenshotimg" src="img/ScreenShot1_ja.jpeg" alt="image1" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot2_ja.jpeg" alt="image2" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot3_ja.jpeg" alt="image3" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot4_ja.jpeg" alt="image4" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot5_ja.jpeg" alt="image5" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot6_ja.jpeg" alt="image6" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot7_ja.jpeg" alt="image7" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot8_ja.jpeg" alt="image8" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot9_ja.jpeg" alt="image9" width=276px height=597px></div>
+    <div><img class="screenshotimg" src="img/ScreenShot10_ja.jpeg" alt="image10" width=276px height=597px></div>
+</div>
+
+<p>
+
+<div id="p1">
+    <a onclick="showDescription();">さらに詳しく</a>
+</div>
+<div id="p2">
+    <a onclick="hideDescription();">説明を隠す</a><br>
+    <p align="left">
+    SocPing は、低水準 POSIX Socket API を使用して Ping および Traceroute を実行するモバイルアプリです。ICMP と UDP の両方に対応し、ホスト OS が備えている標準的なコマンドと同等機能を提供します。<br><br>
+    
+    <span class="functions">Ping</span><br>
+    エコーを連続送信することでホストやネットワークの状態変化を監視します。レスポンス（RTT）やパケットロス率などの統計情報をリアルタイムに確認できます。<br><br>
+    
+    <span class="functions">Traceroute</span><br>
+    生存時間（TTL）をインクリメントしながら宛先ホストまでの経路情報を調べます。<br><br>
+    
+    <span class="functions">One Ping</span><br>
+    1 回だけエコーを送信して宛先ホストへの到達性を確認します。「<b>Ping</b>」と「<b>Traceroute</b>」で応答がない場合に、豊富なオプションを使用して問題箇所を調査します。<br><br>
+    
+    本アプリの特長は、「<b>冗長モード</b>」と「<b>システムコールトレース</b>」による可視化です。<br>
+    冗長モードでは、送受信データのバイナリダンプおよびプロトコルヘッダ解析を行います。パケットキャプチャ機能を持たないモバイル端末でも通信内容を確認できます。<br>
+    また、Linux の strace 相当のシステムコールトレースを取得します。Ping と Traceroute における POSIX Socket API レベルの処理内容を確認できます。<br><br>
+    
+    インターネットやクラウド上で発生する様々な問題の初期調査に SocPing は有効でしょう。ネットワークの状態確認やトラブルシューティングで本アプリを利用してもらえれば幸いです。
+    </p>
+    <a onclick="hideDescription();">説明を隠す</a>
+</div>
+
+<p>
+<br>
+<!-- refer: https://primer.style/octicons/ -->
+<a href="../Apps/index_ja.html"><img src="img/home.svg" height=24></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="https://github.com/manabapp/SocPing"><img src="img/mark-github.svg" height=24></a>
+
+<p>
+
+<!-- refer: https://qiita.com/macoril/items/48125b2a0a48339b3693 -->
+<!-- refer: https://developer.apple.com/jp/app-store/marketing/guidelines/ -->
+<a href="https://itunes.apple.com/jp/app/id[アプリのApple ID]?mt=8"><img src="img/AppStore_JP.svg"></a><br>
+<span class="trademarks">Apple、Appleのロゴは、米国およびその他の国で登録されたApple Inc.の商標です。</span>
+
+<p>
+
+<div class="copyright">
+    Copyright © 2021 manabapp. All rights reserved.<br>
+    <a class="footer" href="TermsOfService_ja.html">利用規約</a>&nbsp;&nbsp;-&nbsp;
+    <a class="footer" href="PrivacyPolicy_ja.html">プライバシー</a>&nbsp;&nbsp;-&nbsp;
+    <a class="footer" href="index.html">English</a> | 日本語
+</div>
+
+<p>
+
+</center>
+<script>
+    document.getElementById("p1").style.display = "block";
+    document.getElementById("p2").style.display = "none";
+    function showDescription(){
+        document.getElementById("p1").style.display = "none";
+        document.getElementById("p2").style.display = "block";
+    }
+    function hideDescription(){
+        document.getElementById("p1").style.display = "block";
+        document.getElementById("p2").style.display = "none";
+    }
+</script>
+</body>
+</html>

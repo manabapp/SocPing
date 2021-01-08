@@ -9,12 +9,21 @@ import Foundation
 import SwiftUI
 import UIKit
 
-let URL_BASE = "https://manabapp.github.io/SocPing/"
+let APP_VERTION = "1.0.0"
+let COPYRIGHT = "Copyright © 2021 manabapp. All rights reserved."
+let URL_BASE = "https://manabapp.github.io/"
+let URL_TERMS = URL_BASE + "SocPing/TermsOfService.html"
+let URL_TERMS_JA = URL_BASE + "SocPing/TermsOfService_ja.html"
+let URL_POLICY = URL_BASE + "SocPing/PrivacyPolicy.html"
+let URL_POLICY_JA = URL_BASE + "SocPing/PrivacyPolicy_ja.html"
+let URL_WEBPAGE = URL_BASE + "Apps/App_SocPing/index.html"
+let URL_WEBPAGE_JA = URL_BASE + "Apps/App_SocPing/index_ja.html"
+let MAIL_ADDRESS = "manabapp@gmail.com"
 
 struct SocPingMenu: View {
     @EnvironmentObject var object: SocPingSharedObject
+    @State var logText: String = ""
     @State private var alertTitle: String = "Unexpected error."
-    @State private var alertMessage: String = ""
     @State private var isPopAlert: Bool = false
     
     static func getBytes(_ size: Int) -> Text {
@@ -74,45 +83,26 @@ struct SocPingMenu: View {
                 }
             }
             Section(header: Text("Header_LOG")) {
-                NavigationLink(destination: SocPingLogViewer()) {
-                    CommonRaw(name:"Log Viewer", image:"note.text", detail:"Description_Log_Viewer")
+                ZStack {
+                    NavigationLink(destination: SocPingLogViewer(text: self.$logText)) {
+                        Text("")
+                    }
+                    Button(action: {
+                        SocLogger.debug("SocPingMenu: Button: Log Viewer")
+                        self.logText = SocLogger.getLog()
+                    }) {
+                        CommonRaw(name:"Log Viewer", image:"note.text", detail:"Description_Log_Viewer")
+                    }
                 }
             }
             Section(header: Text("Header_INFORMATION")) {
                 NavigationLink(destination: AboutApp()) {
-                    CommonRaw(name:"About App", image:"app.badge", detail:"Description_About_App")
-                }
-                NavigationLink(destination: AppVersion()) {
-                    CommonRaw(name:"App Version", image:"info.circle", detail:"Description_App_Version")
+                    CommonRaw(name:"About App", image:"info.circle", detail:"Description_About_App")
                 }
                 Button(action: {
-                    SocLogger.debug("SocPingMenu: Button: Terms of Service")
+                    SocLogger.debug("SocPingMenu: Button: Policy")
                     do {
-                        let url = URL(string: SocPingSharedObject.isJa ? URL_BASE + "TermsOfService_ja.html" : URL_BASE + "TermsOfService.html")!
-                        guard UIApplication.shared.canOpenURL(url) else {
-                            throw SocPingError.CantOpenURL
-                        }
-                        UIApplication.shared.open(url)
-                    }
-                    catch let error as SocPingError {
-                        self.alertTitle = error.message
-                        self.isPopAlert = true
-                    }
-                    catch {
-                        SocLogger.error("SocPingMenu: \(error)")
-                        assertionFailure("SocPingMenu: \(error)")
-                        self.isPopAlert = true
-                    }
-                }) {
-                    CommonRaw(name:"Terms of Service", image:"doc.text", detail:"Description_Terms_of_Service")
-                }
-                .alert(isPresented: self.$isPopAlert) {
-                    Alert(title: Text(self.alertTitle))
-                }
-                Button(action: {
-                    SocLogger.debug("SocPingMenu: Button: Privacy Policy")
-                    do {
-                        let url = URL(string: SocPingSharedObject.isJa ? URL_BASE + "PrivacyPolicy_ja.html" : URL_BASE + "PrivacyPolicy.html")!
+                        let url = URL(string: SocPingSharedObject.isJa ? URL_POLICY_JA : URL_POLICY)!
                         guard UIApplication.shared.canOpenURL(url) else {
                             throw SocPingError.CantOpenURL
                         }
@@ -129,6 +119,30 @@ struct SocPingMenu: View {
                     }
                 }) {
                     CommonRaw(name:"Privacy Policy", image:"hand.raised.fill", detail:"Description_Privacy_Policy")
+                }
+                .alert(isPresented: self.$isPopAlert) {
+                    Alert(title: Text(self.alertTitle))
+                }
+                Button(action: {
+                    SocLogger.debug("SocPingMenu: Button: Terms")
+                    do {
+                        let url = URL(string: SocPingSharedObject.isJa ? URL_TERMS_JA : URL_TERMS)!
+                        guard UIApplication.shared.canOpenURL(url) else {
+                            throw SocPingError.CantOpenURL
+                        }
+                        UIApplication.shared.open(url)
+                    }
+                    catch let error as SocPingError {
+                        self.alertTitle = error.message
+                        self.isPopAlert = true
+                    }
+                    catch {
+                        SocLogger.error("SocPingMenu: \(error)")
+                        assertionFailure("SocPingMenu: \(error)")
+                        self.isPopAlert = true
+                    }
+                }) {
+                    CommonRaw(name:"Terms of Service", image:"doc.plaintext", detail:"Description_Terms_of_Service")
                 }
                 .alert(isPresented: self.$isPopAlert) {
                     Alert(title: Text(self.alertTitle))
@@ -195,22 +209,23 @@ fileprivate struct AppSettings: View {
                     Text("Label_Inverted")
                 }
             }
-            Section(header: Text("TRACE LEVEL").font(.system(size: 16, weight: .semibold)),
-                    footer: object.appSettingDescription ? Text("Footer_app_TRACE_LEVEL").font(.system(size: 12)) : nil) {
+            Section(header: Text("SYSTEM CALL TRACE").font(.system(size: 16, weight: .semibold)),
+                    footer: object.appSettingDescription ? Text("Footer_app_SYSTEM_CALL_TRACE").font(.system(size: 12)) : nil) {
                 Picker("", selection: self.$object.appSettingTraceLevel) {
-                    Text("Label_TRACE_NONE").tag(SocLogger.traceLevelNone)
-                    Text("Label_TRACE_CALL").tag(SocLogger.traceLevelCall)
-                    Text("Label_TRACE_DUMP").tag(SocLogger.traceLevelDump)
+                    Text("Label_TRACE_Level1").tag(SocLogger.traceLevelNoData)
+                    Text("Label_TRACE_Level2").tag(SocLogger.traceLevelInLine)
+                    Text("Label_TRACE_Level3").tag(SocLogger.traceLevelHexDump)
                 }
                 .pickerStyle(SegmentedPickerStyle())
             }
+#if DEBUG
             Section(header: Text("DEBUG").font(.system(size: 16, weight: .semibold)),
                     footer: object.appSettingDescription ? Text("Footer_app_DEBUG").font(.system(size: 12)) : nil) {
                 Toggle(isOn: self.$object.appSettingDebugEnabled) {
                     Text("Label_Enabled")
                 }
             }
-
+#endif
         }
         .listStyle(GroupedListStyle())
         .navigationBarTitle("App Settings", displayMode: .inline)
@@ -390,7 +405,7 @@ fileprivate struct PingSettings: View {
                     footer: object.appSettingDescription ? Text("Footer_ping_LOOP").font(.system(size: 12)) : nil) {
                 HStack {
                     Picker("", selection: self.$object.pingSettingLoopType) {
-                        Text("Label_Infinitely_loop").tag(0)
+                        Text("Label_Infinite_loop").tag(0)
                         Text("Label_Stops_after_loop").tag(1)
                     }
                     .pickerStyle(SegmentedPickerStyle())
@@ -971,27 +986,31 @@ fileprivate struct TracerouteSettings: View {
                                 HStack {
                                     Spacer()
                                     Image(systemName: "wifi")
+                                        .frame(width: 14, height: 14)
+                                        .foregroundColor(object.interfaces[SocPingInterface.deviceTypeWifi].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
                                     Spacer()
                                 }
-                                .foregroundColor(object.interfaces[SocPingInterface.deviceTypeWifi].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
                                 HStack {
                                     Spacer()
                                     Image(systemName: "antenna.radiowaves.left.and.right")
+                                        .frame(width: 14, height: 14)
+                                        .foregroundColor(object.interfaces[SocPingInterface.deviceTypeCellurar].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
                                     Spacer()
                                 }
-                                .foregroundColor(object.interfaces[SocPingInterface.deviceTypeCellurar].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
                                 HStack {
                                     Spacer()
                                     Image(systemName: "personalhotspot")
+                                        .frame(width: 14, height: 14)
+                                        .foregroundColor(object.interfaces[SocPingInterface.deviceTypeHotspot].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
                                     Spacer()
                                 }
-                                .foregroundColor(object.interfaces[SocPingInterface.deviceTypeHotspot].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
                                 HStack {
                                     Spacer()
                                     Image(systemName: "arrow.triangle.2.circlepath")
+                                        .frame(width: 14, height: 14)
+                                        .foregroundColor(object.interfaces[SocPingInterface.deviceTypeLoopback].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
                                     Spacer()
                                 }
-                                .foregroundColor(object.interfaces[SocPingInterface.deviceTypeLoopback].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
                             }
                             Picker("", selection: self.$object.traceSettingInterface) {
                                 Text("Label_Wi-Fi").tag(SocPingInterface.deviceTypeWifi)
@@ -1158,8 +1177,8 @@ fileprivate struct OnePingSettings: View {
     var body: some View {
         List {
             Group {
-                Section(header: Text("VERBOSE").font(.system(size: 16, weight: .semibold)),
-                        footer: object.appSettingDescription ? Text("Footer_one_VERBOSE").font(.system(size: 12)) : nil) {
+                Section(header: Text("VERBOSE MODE").font(.system(size: 16, weight: .semibold)),
+                        footer: object.appSettingDescription ? Text("Footer_one_VERBOSE_MODE").font(.system(size: 12)) : nil) {
                     Toggle(isOn: self.$object.oneSettingVerbose) {
                         Text("Label_Enabled")
                     }
@@ -1617,27 +1636,31 @@ fileprivate struct OnePingSettings: View {
                                 HStack {
                                     Spacer()
                                     Image(systemName: "wifi")
+                                        .frame(width: 14, height: 14)
+                                        .foregroundColor(object.interfaces[SocPingInterface.deviceTypeWifi].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
                                     Spacer()
                                 }
-                                .foregroundColor(object.interfaces[SocPingInterface.deviceTypeWifi].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
                                 HStack {
                                     Spacer()
                                     Image(systemName: "antenna.radiowaves.left.and.right")
+                                        .frame(width: 14, height: 14)
+                                        .foregroundColor(object.interfaces[SocPingInterface.deviceTypeCellurar].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
                                     Spacer()
                                 }
-                                .foregroundColor(object.interfaces[SocPingInterface.deviceTypeCellurar].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
                                 HStack {
                                     Spacer()
                                     Image(systemName: "personalhotspot")
+                                        .frame(width: 14, height: 14)
+                                        .foregroundColor(object.interfaces[SocPingInterface.deviceTypeHotspot].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
                                     Spacer()
                                 }
-                                .foregroundColor(object.interfaces[SocPingInterface.deviceTypeHotspot].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
                                 HStack {
                                     Spacer()
                                     Image(systemName: "arrow.triangle.2.circlepath")
+                                        .frame(width: 14, height: 14)
+                                        .foregroundColor(object.interfaces[SocPingInterface.deviceTypeLoopback].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
                                     Spacer()
                                 }
-                                .foregroundColor(object.interfaces[SocPingInterface.deviceTypeLoopback].isActive ? Color.init(UIColor.label) : Color.init(UIColor.systemGray))
                             }
                             Picker("", selection: self.$object.oneSettingInterface) {
                                 Text("Label_Wi-Fi").tag(SocPingInterface.deviceTypeWifi)
@@ -1745,7 +1768,7 @@ fileprivate struct OnePingSettings: View {
 
 fileprivate struct SocPingLogViewer: View {
     @EnvironmentObject var object: SocPingSharedObject
-    @State var text: String = ""
+    @Binding var text: String
     @State private var copyMessage: String = ""
     @State private var isAlerting: Bool = false
     
@@ -1754,63 +1777,68 @@ fileprivate struct SocPingLogViewer: View {
             VStack(spacing: 0) {
                 SocPingScreen(text: self.$text)
                 if object.orientation.isPortrait {
-                    Form {
-                        Button(action: {
-                            SocLogger.debug("SocPingLogViewer: Button: Reload")
-                            self.text = SocLogger.getLog()
-                        }) {
-                            HStack {
-                                Spacer()
-                                Image(systemName: "arrow.clockwise")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 19, height: 19, alignment: .center)
-                                Text("Button_Reload")
-                                    .padding(.leading, 5)
-                                Spacer()
+                    HStack(spacing: 0) {
+                        Form {
+                            Button(action: {
+                                SocLogger.debug("SocPingLogViewer: Button: Reload")
+                                self.text = SocLogger.getLog()
+                            }) {
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "arrow.clockwise")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 19, height: 19, alignment: .center)
+                                    Text("Button_Reload2")
+                                        .padding(.leading, 5)
+                                    Spacer()
+                                }
                             }
                         }
-                        Button(action: {
-                            SocLogger.debug("SocPingLogViewer: Button: Copy")
-                            self.text = SocLogger.getLog()
-                            self.copyMessage = "Lines: \(SocLogger.getCount()), Size: \(self.text.count)"
-                            UIPasteboard.general.string = self.text
-                            DispatchQueue.global().async {
-                                usleep(500000)
-                                isAlerting = true
-                                usleep(1500000)
-                                isAlerting = false
-                            }
-                        }) {
-                            HStack {
-                                Spacer()
-                                Image(systemName: "doc.on.doc")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 19, height: 19, alignment: .center)
-                                Text("Button_Copy")
-                                    .padding(.leading, 5)
-                                Spacer()
+                        Form {
+                            Button(action: {
+                                SocLogger.debug("SocPingLogViewer: Button: Copy")
+                                self.text = SocLogger.getLog()
+                                UIPasteboard.general.string = self.text
+                                DispatchQueue.global().async {
+                                    usleep(500000)
+                                    isAlerting = true
+                                    usleep(1500000)
+                                    isAlerting = false
+                                }
+                            }) {
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "doc.on.doc")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 19, height: 19, alignment: .center)
+                                    Text("Button_Copy")
+                                        .padding(.leading, 5)
+                                    Spacer()
+                                }
                             }
                         }
-                        Button(action: {
-                            SocLogger.debug("SocPingLogViewer: Button: Reset")
-                            SocLogger.resetLog()
-                            self.text = SocLogger.getLog()
-                        }) {
-                            HStack {
-                                Spacer()
-                                Image(systemName: "trash")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 19, height: 19, alignment: .center)
-                                Text("Button_Reset")
-                                    .padding(.leading, 5)
-                                Spacer()
+                        Form {
+                            Button(action: {
+                                SocLogger.debug("SocPingLogViewer: Button: Clear")
+                                SocLogger.clearLog()
+                                self.text = SocLogger.getLog()
+                            }) {
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "trash")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 19, height: 19, alignment: .center)
+                                    Text("Button_Clear")
+                                        .padding(.leading, 5)
+                                    Spacer()
+                                }
                             }
                         }
                     }
-                    .frame(height: 200)
+                    .frame(height: 110)
                 }
             }
             .navigationBarTitle(Text("Log Viewer"), displayMode: .inline)
@@ -1818,123 +1846,26 @@ fileprivate struct SocPingLogViewer: View {
             
             if isAlerting {
                 VStack() {
-                    self.getCopyMessage()
-                        .padding()
-                        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
-                        .foregroundColor(Color(.systemBackground))  // Uses inverted color
-                        .background(Color(.label).opacity(0.85))  // Uses inverted color
-                        .cornerRadius(10.0)
+                    Text("Message_Copied_to_clipboard")
+                        .font(.system(size: 16, weight: .semibold))
+                        .padding(10)
+                        .frame(minWidth: 0, maxWidth: .infinity, alignment: .center)
+                        .foregroundColor(Color(object.appSettingScreenColorInverted ? .label : .systemBackground))
+                        .background(Color(object.appSettingScreenColorInverted ? .systemBackground : .label).opacity(0.85))
+                        .cornerRadius(20.0)
                     Spacer()
                 }
                 .padding(20)
             }
         }
     }
-    
-    func getCopyMessage() -> Text {
-        let text1 = Text("Message_Copied_to_clipboard").font(.system(size: 16, weight: .semibold))
-        let text2 = Text(self.copyMessage).font(.system(size: 12))
-        return text1 + Text("\n") + text2
-    }
 }
 
 fileprivate struct AboutApp: View {
     @EnvironmentObject var object: SocPingSharedObject
+    @State private var alertTitle: String = "Unexpected error."
+    @State private var isPopAlert: Bool = false
     
-    var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 5) {
-                Text("Overview")
-                    .font(.system(size: 26, weight: .bold))
-                    .padding(.top, 5)
-                    .padding(.horizontal, 5)
-                Text("AboutApp_overview1")
-                    .font(.system(size: 15))
-                    .padding(.horizontal, 5)
-                    .padding(.bottom, 10)
-                
-                HStack {
-                    Image(systemName: "circle")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 22, height: 22, alignment: .center)
-                        .padding(.leading, 20)
-                        .padding(.trailing, 3)
-                    Text("Ping")
-                        .font(.system(size: 20, weight: .semibold))
-                    Spacer()
-                }
-                Text("AboutApp_overview_ping")
-                    .font(.system(size: 15))
-                    .padding(.leading, 20)
-                    .padding(.trailing, 15)
-                    .padding(.bottom, 15)
-
-                HStack {
-                    Image(systemName: "arrow.triangle.swap")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 22, height: 22, alignment: .center)
-                        .padding(.leading, 20)
-                        .padding(.trailing, 3)
-                    Text("Traceroute")
-                        .font(.system(size: 20, weight: .semibold))
-                    Spacer()
-                }
-                Text("AboutApp_overview_trace")
-                    .font(.system(size: 15))
-                    .padding(.leading, 20)
-                    .padding(.trailing, 15)
-                    .padding(.bottom, 15)
-                
-                HStack {
-                    Image(systemName: "1.circle")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 22, height: 22, alignment: .center)
-                        .padding(.leading, 20)
-                        .padding(.trailing, 3)
-                    Text("One Ping")
-                        .font(.system(size: 20, weight: .semibold))
-                    Spacer()
-                }
-                Text("AboutApp_overview_one")
-                    .font(.system(size: 15))
-                    .padding(.leading, 20)
-                    .padding(.trailing, 15)
-                    .padding(.bottom, 15)
-                
-                Text("AboutApp_overview2")
-                    .font(.system(size: 15))
-                    .padding(.horizontal, 5)
-                    .padding(.bottom, 5)
-                Text("AboutApp_overview3")
-                    .font(.system(size: 15))
-                    .padding(.horizontal, 5)
-                    .padding(.bottom, 10)
-            }
-            VStack(alignment: .center, spacing: 5) {
-                Text("Please feel free to contact me if you have any feedback.")
-                    .font(.system(size: 11))
-                Button(action: {
-                    let url = URL(string: "mailto:manabapp@gmail.com")!
-                    UIApplication.shared.open(url)
-                }) {
-                    Text("manabapp@gmail.com")
-                        .font(.system(size: 11))
-                }
-                Text("Copyright © 2021 manabapp. All rights reserved.")
-                    .font(.system(size: 11))
-                    .foregroundColor(Color.init(UIColor.systemGray))
-                    .padding(.bottom, 10)
-            }
-        }
-        .navigationBarTitle("About App", displayMode: .inline)
-    }
-}
-
-
-fileprivate struct AppVersion: View {
     var body: some View {
         VStack {
             Image("SplashImage")
@@ -1943,20 +1874,66 @@ fileprivate struct AppVersion: View {
                 .frame(width: 80, alignment: .center)
             Text("SocPing")
                 .font(.system(size: 26, weight: .bold))
-            Text("version 1.0.0")
+            Text("version " + object.appVersion)
                 .font(.system(size: 16))
+                .padding(.bottom, 5)
+
             Text("This app is simple pinger with low-level POSIX socket API.")
                 .font(.system(size: 11))
-                .padding(5)
-            Text("Support OS: iOS 14.0.0 or newer")
+            Button(action: {
+                SocLogger.debug("SocPingMenu: Button: webpage")
+                do {
+                    let url = URL(string: SocPingSharedObject.isJa ? URL_WEBPAGE_JA : URL_WEBPAGE)!
+                    guard UIApplication.shared.canOpenURL(url) else {
+                        throw SocPingError.CantOpenURL
+                    }
+                    UIApplication.shared.open(url)
+                }
+                catch let error as SocPingError {
+                    self.alertTitle = error.message
+                    self.isPopAlert = true
+                }
+                catch {
+                    SocLogger.error("AppVersion: \(error)")
+                    assertionFailure("AppVersion: \(error)")
+                    self.isPopAlert = true
+                }
+            }) {
+                HStack {
+                    Spacer()
+                    Image(systemName: "safari")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 14, height: 14)
+                    Text("Developer Website")
+                        .font(.system(size: 11))
+                    Spacer()
+                }
+                .padding(.bottom, 5)
+            }
+            
+            Text("Support OS: iOS 14.0 or newer")
                 .font(.system(size: 11))
             Text("Localization: en, ja")
                 .font(.system(size: 11))
-            Text("Copyright © 2021 manabapp. All rights reserved.")
+                .padding(.bottom, 20)
+            
+            Text("Please feel free to contact me if you have any feedback.")
+                .font(.system(size: 11))
+            Button(action: {
+                SocLogger.debug("SocPingMenu: Button: mailto")
+                let url = URL(string: "mailto:" + MAIL_ADDRESS)!
+                UIApplication.shared.open(url)
+            }) {
+                Text(MAIL_ADDRESS)
+                    .font(.system(size: 12))
+                    .padding(5)
+            }
+            
+            Text(COPYRIGHT)
                 .font(.system(size: 11))
                 .foregroundColor(Color.init(UIColor.systemGray))
-                .padding(10)
         }
-        .navigationBarTitle("App Version", displayMode: .inline)
+        .navigationBarTitle("About App", displayMode: .inline)
     }
 }
