@@ -25,6 +25,7 @@ struct SocOptval {
     static let levelNames = ["SOL_SOCKET", "IPPROTO_IP"]
     static let solOptions = [
         (SO_DONTROUTE,      SocOptval.typeBool,     "SO_DONTROUTE"),
+        (SO_BROADCAST,      SocOptval.typeBool,     "SO_BROADCAST"),
         (SO_TIMESTAMP,      SocOptval.typeBool,     "SO_TIMESTAMP"),
         (SO_SNDBUF,         SocOptval.typeInt,      "SO_SNDBUF"),
         (SO_RCVBUF,         SocOptval.typeInt,      "SO_RCVBUF")

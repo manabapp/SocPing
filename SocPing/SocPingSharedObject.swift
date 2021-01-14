@@ -569,7 +569,7 @@ final class SocPingSharedObject: ObservableObject {
         SocLogger.debug("App Version = \(appVersion)")
         SocLogger.debug("Agreed the Terms of Service: \(self.getAgreementDate())")
         for i in 0 ..< self.interfaces.count {
-            self.interfaces[i].ifconfig()
+            self.interfaces[i].ifconfig(isLaunching: true)
         }
         let width = CGFloat(UIScreen.main.bounds.width)
         let height = CGFloat(UIScreen.main.bounds.height)

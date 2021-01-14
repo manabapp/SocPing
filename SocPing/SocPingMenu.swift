@@ -9,16 +9,15 @@ import Foundation
 import SwiftUI
 import UIKit
 
-let APP_VERTION = "1.0.0"
+let MAIL_ADDRESS = "manabapp@gmail.com"
 let COPYRIGHT = "Copyright © 2021 manabapp. All rights reserved."
 let URL_BASE = "https://manabapp.github.io/"
-let URL_TERMS = URL_BASE + "SocPing/TermsOfService.html"
-let URL_TERMS_JA = URL_BASE + "SocPing/TermsOfService_ja.html"
+let URL_WEBPAGE = URL_BASE + "Apps/index.html"
+let URL_WEBPAGE_JA = URL_BASE + "Apps/index_ja.html"
 let URL_POLICY = URL_BASE + "SocPing/PrivacyPolicy.html"
 let URL_POLICY_JA = URL_BASE + "SocPing/PrivacyPolicy_ja.html"
-let URL_WEBPAGE = URL_BASE + "Apps/App_SocPing/index.html"
-let URL_WEBPAGE_JA = URL_BASE + "Apps/App_SocPing/index_ja.html"
-let MAIL_ADDRESS = "manabapp@gmail.com"
+let URL_TERMS = URL_BASE + "SocPing/TermsOfService.html"
+let URL_TERMS_JA = URL_BASE + "SocPing/TermsOfService_ja.html"
 
 struct SocPingMenu: View {
     @EnvironmentObject var object: SocPingSharedObject

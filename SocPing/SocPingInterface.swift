@@ -33,7 +33,7 @@ struct SocPingInterface {
         self.deviceType = deviceType
     }
     
-    mutating func ifconfig() {
+    mutating func ifconfig(isLaunching: Bool = false) {
         // reset parameters
         self.flags = 0
         self.ether = ""
@@ -117,7 +117,7 @@ struct SocPingInterface {
             if self.deviceType == SocPingInterface.deviceTypeLoopback {
                 self.inet.hostName = "localhost"
             }
-            else {
+            else if !isLaunching {
                 try! self.inet.resolveHostName()
             }
         }
