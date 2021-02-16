@@ -3,25 +3,24 @@
 //  LibSoc - Swifty POSIX Socket Library
 //
 //  Created by Hirose Manabu on 2021/01/01.
+//  Changed by Hirose Manabu on 2021/02/12. (version 1.1)
 //
 
+import Foundation
 import Darwin
 
 struct SocAddress {
-    let family: Int32  // AF_INET
-    var addr: String   // IPv4 format String
+    let family: Int32  // AF_INET, or AF_UNIX
+    var addr: String   // IPv4 format String, or UNIX domain path
     var port: UInt16
     var hostName: String
     let isBroadcast: Bool  // user's set at initializer
     
-    var isMulticast: Bool { return self.classIndex() == 3 }
-    var isAny: Bool { return self.family == AF_INET && UInt32(inet_addr(self.addr)) == 0 }
-    var isPrivate: Bool { return (UInt32(inet_addr(self.addr)).bigEndian & 0xffffff00) == 0xac140a00 }
-    var hasHostName: Bool { return !self.hostName.isEmpty }
-    var classLabel: String { return SocAddress.classLabels[self.classIndex()] }
-    
     private static let classLabels = ["Class A", "Class B", "Class C", "Class D", "Class E"]
     private func classIndex() -> Int {
+        guard self.isInet else {
+            return 0  // Dummy
+        }
         if (UInt32(inet_addr(self.addr)).bigEndian & 0xf0000000) == 0xf0000000 { return 4 }  // Class E
         if (UInt32(inet_addr(self.addr)).bigEndian & 0xe0000000) == 0xe0000000 { return 3 }  // Class D
         if (UInt32(inet_addr(self.addr)).bigEndian & 0xc0000000) == 0xc0000000 { return 2 }  // Class C
@@ -29,8 +28,25 @@ struct SocAddress {
         return 0  // Class A
     }
     
+    var isInet: Bool { self.family == AF_INET }
+    var isUnix: Bool { self.family == AF_UNIX }
+    var isMulticast: Bool { self.isInet && self.classIndex() == 3 }
+    var isAny: Bool { self.isInet && UInt32(inet_addr(self.addr)) == 0 }
+    var isPrivate: Bool { self.isInet && (UInt32(inet_addr(self.addr)).bigEndian & 0xffffff00) == 0xac140a00 }
+    var hasHostName: Bool { !self.hostName.isEmpty }
+    var classLabel: String { SocAddress.classLabels[self.classIndex()] }
+    var isValid: Bool {
+        if self.isInet {
+            return !self.isAny || self.port > 0
+        }
+        if self.isUnix {
+            return !addr.isEmpty
+        }
+        return false
+    }
+    
     static func getAddressByName(name: String, port: UInt16 = 0) throws -> SocAddress {
-        if name.isEmpty {
+        guard !name.isEmpty else {
             throw SocError.InvalidParameter
         }
         guard let host = name.withCString({ gethostbyname($0) }) else {
@@ -58,7 +74,7 @@ struct SocAddress {
     }
     
     mutating func resolveHostName() throws {
-        if self.family != AF_INET || self.addr.isEmpty {
+        guard self.isInet && !self.addr.isEmpty else {
             throw SocError.InvalidParameter
         }
         var inAddr = in_addr()
@@ -69,5 +85,23 @@ struct SocAddress {
             self.hostName = String.init(cString: he.pointee.h_name)
         }
         // else -> Unkown host
+    }
+    
+    func delete() throws {
+        guard self.isUnix else {
+            return
+        }
+        let temporaryDirURL = FileManager.default.temporaryDirectory
+        let socketPathURL = temporaryDirURL.appendingPathComponent(self.addr)
+        if !FileManager.default.fileExists(atPath: socketPathURL.path) {
+            //tmp's file may be remoed by system -> not error
+            return
+        }
+        do {
+            try FileManager.default.removeItem(atPath: socketPathURL.path)
+        }
+        catch {
+            throw SocError.FileDeleteError
+        }
     }
 }

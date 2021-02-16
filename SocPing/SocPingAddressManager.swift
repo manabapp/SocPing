@@ -3,6 +3,7 @@
 //  SocPing
 //
 //  Created by Hirose Manabu on 2021/01/01.
+//  Changed by Hirose Manabu on 2021/02/12. (version 1.1)
 //
 
 import SwiftUI
@@ -216,12 +217,15 @@ fileprivate struct AddressRegister: View {
     }
     
     func getAddress() throws -> SocAddress {
-        if self.hostString.isEmpty {
+        guard !self.hostString.isEmpty else {
             SocLogger.debug("AddressRegister.getAddress: no host")
             throw SocPingError.NoHostValue
         }
         var newAddress: SocAddress
         if self.addressTypeIndex == 0 {
+            guard self.hostString.isValidIPv4Format else {
+                throw SocPingError.InvalidIpAddr
+            }
             newAddress = SocAddress(family: AF_INET, addr: hostString)
             try newAddress.resolveHostName()
         }

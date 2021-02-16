@@ -3,6 +3,7 @@
 //  SocPing
 //
 //  Created by Hirose Manabu on 2021/01/01.
+//  Changed by Hirose Manabu on 2021/02/12. (version 1.1)
 //
 
 import SwiftUI
@@ -309,7 +310,7 @@ struct SocPingPinger: View {
         echo.incr()  // increments seq/sweep size
         let datagram = try echo.getDatagram()
         self.clrDup(Int(self.cntSent) % SocPingPinger.dupAccuracy)
-        let sent = try socket.sendto(data: datagram, address: echo.address)
+        let sent = try socket.sendto(data: datagram, flags: 0, address: echo.address)
         self.cntSent += 1
         self.progressAsync()
         SocLogger.debug("SocPingPinger.sendEcho: \(sent != datagram.count ? "partial" : "echo") sent (\(sent) bytes)")
@@ -323,22 +324,21 @@ struct SocPingPinger: View {
 
         var buffers: [Data] = []
         buffers.append(Data([UInt8](repeating: 0, count: 65536)))  // Maximum size of IPv4 packet (IP_MAXPACKET) is 65535
-        var control = Data([UInt8](repeating: 0, count: 28))
-        let (received, from, controlLen, _) = try socket.recvmsg(datas: &buffers, control: &control)
+        let (received, cmsgs, _, from) = try socket.recvmsg(datas: &buffers, controlLen: 28, flags: 0, needAddress: true)
         Darwin.gettimeofday(&recvTv, nil)
         let data = buffers[0]
         SocLogger.debug("SocPingPinger.recvEchoreply: \(received) bytes received")
         
         let ipHdrLen = (received > 0) ? SocPingEcho.getIpHdrLen(base: data, offset: 0) : 0
         var msg = "\(received - ipHdrLen) bytes from "
-        if from == nil {
+        if let address = from {
+            msg += "\(address.addr):"
+        }
+        else {
             SocLogger.error("SocPingPinger.recvEchoreply: recvmsg() no from address")  // no reachable
             msg += "unknown:"
         }
-        else {
-            msg += "\(from!.addr):"
-        }
-        if received < ipHdrLen + ICMP_HDRLEN {
+        guard received >= ipHdrLen + ICMP_HDRLEN else {
             self.outputAsync("\(msg) packet too short")
             SocLogger.debug("SocPingPinger.recvEchoreply: packet too short")
             return
@@ -348,22 +348,22 @@ struct SocPingPinger: View {
         if icmpHdr.icmp_type != ICMP_ECHOREPLY {
             if icmpHdr.hasIpHdr {
                 let ipHdrLen2 = (received > ipHdrLen + ICMP_HDRLEN) ? SocPingEcho.getIpHdrLen(base: data, offset: ipHdrLen + ICMP_HDRLEN) : 0
-                if received < ipHdrLen + ICMP_HDRLEN + ipHdrLen2 + ICMP_HDRLEN {
+                guard received >= ipHdrLen + ICMP_HDRLEN + ipHdrLen2 + ICMP_HDRLEN else {
                     SocLogger.debug("SocPingPinger.recvEchoreply: \(icmpHdr.typeMessage) - including IP packet too short")
                     return
                 }
                 let ipHdr2 = SocPingEcho.getIpHdr(base: data, offset: ipHdrLen + ICMP_HDRLEN)
                 // No check IP address(ipHdr2.dstAddr) because it may be change with Loose Source Routing
-                if ipHdr2.ip_p != IPPROTO_ICMP {
+                guard ipHdr2.ip_p == IPPROTO_ICMP else {
                     SocLogger.debug("SocPingPinger.recvEchoreply: \(icmpHdr.typeMessage) - unexpected echo packet (IP Proto: \(ipHdr2.ip_p))")
                     return
                 }
                 let icmpHdr2 = SocPingEcho.getIcmpHdr(base: data, offset: ipHdrLen + ICMP_HDRLEN + ipHdrLen2)
-                if icmpHdr2.icmp_type != ICMP_ECHO {
+                guard icmpHdr2.icmp_type == ICMP_ECHO else {
                     SocLogger.debug("SocPingPinger.recvEchoreply: \(icmpHdr.typeMessage) - unexpected echo packet (ICMP Type: \(icmpHdr2.icmp_type))")
                     return
                 }
-                if icmpHdr2.icmp_id != echo.id {
+                guard icmpHdr2.icmp_id == echo.id else {
                     SocLogger.debug("SocPingPinger.recvEchoreply: \(icmpHdr.typeMessage) - unexpected echo packet (ICMP Id: \(icmpHdr2.icmp_id))")
                     return
                 }
@@ -372,7 +372,7 @@ struct SocPingPinger: View {
             SocLogger.debug("SocPingPinger.recvEchoreply: \(icmpHdr.message)")
             return
         }
-        if icmpHdr.icmp_id != echo.id {
+        guard icmpHdr.icmp_id == echo.id else {
             SocLogger.debug("SocPingPinger.recvEchoreply: invalid ICMP id = \(icmpHdr.icmp_id)")
             return
         }
@@ -387,10 +387,9 @@ struct SocPingPinger: View {
             self.setDup(Int(icmpHdr.icmp_seq) % SocPingPinger.dupAccuracy)
         }
         
-        let cmsgs = SocCmsg.createCmsgs(control: control, length: controlLen)
         for i in 0 ..< cmsgs.count {
             if cmsgs[i].hdr.cmsg_level == SOL_SOCKET && cmsgs[i].hdr.cmsg_type == SCM_TIMESTAMP {
-                recvTv = cmsgs[i].tv  // Rewrite
+                recvTv = cmsgs[i].data.withUnsafeBytes { $0.load(as: timeval.self) }  // Rewrite
                 break
             }
         }

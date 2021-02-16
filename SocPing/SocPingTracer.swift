@@ -3,6 +3,7 @@
 //  SocPing
 //
 //  Created by Hirose Manabu on 2021/01/01.
+//  Changed by Hirose Manabu on 2021/02/12. (version 1.1)
 //
 
 import SwiftUI
@@ -283,11 +284,11 @@ struct SocPingTracer: View {
                 let sendDate = Date()
                 if echo.proto == IPPROTO_ICMP {
                     try socket.setsockopt(level: IPPROTO_IP, option: IP_TTL, value: SocOptval(int: ttl))
-                    sent = try socket.sendto(data: datagram, address: echo.address)
+                    sent = try socket.sendto(data: datagram, flags: 0, address: echo.address)
                 }
                 else {
                     try udpSocket.setsockopt(level: IPPROTO_IP, option: IP_TTL, value: SocOptval(int: ttl))
-                    sent = try udpSocket.sendto(data: datagram, address: echo.address)
+                    sent = try udpSocket.sendto(data: datagram, flags: 0, address: echo.address)
                 }
                 self.cntSent += 1
                 self.progressAsync(self.cntSent)
@@ -333,7 +334,7 @@ struct SocPingTracer: View {
                     // Receive reply
                     //======================================================
                     var data = Data([UInt8](repeating: 0, count: 65536))  // Maximum size of IPv4 packet (IP_MAXPACKET) is 65535
-                    var (received, from) = try socket.recvfrom(data: &data)
+                    var (received, from) = try socket.recvfrom(data: &data, flags: 0, needAddress: true)
                     let rtt = Date().timeIntervalSince(sendDate)
                     SocLogger.debug("SocPingTracer.action: \(received) bytes received")
                     if from == nil {

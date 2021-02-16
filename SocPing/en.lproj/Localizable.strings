@@ -3,6 +3,7 @@
   SocPing
 
   Created by Hirose Manabu on 2021/01/01.
+  Changed by Hirose Manabu on 2021/02/12. (version 1.1)
   
 */
 
@@ -12,6 +13,7 @@ ToS_Agree = "Agree";
 Message_Copied_to_clipboard = "Copied to clipboard.";
 Message_Multiple_actions_not_possible = "Multiple actions not possible.";
 Message_NoHostValue = "IP address or host name not specified.";
+Message_InvalidIpAddr = "Invalid IP address format.";
 Message_AlreadyAddressExist = "Already same address exists.";
 Message_ReservedAddress = "Used as a local address.";
 Message_AddressExceeded = "Maximum number of addresses exceeded.";
@@ -45,7 +47,7 @@ Description_App_Settings = "Changes the settings for app operation and UI";
 Description_One_Ping_Settings = "Changes the option settings for One Ping feature";
 Description_Ping_Settings = "Changes the option settings for Ping feature";
 Description_Traceroute_Settings = "Changes the option settings for Traceroute feature";
-Description_Log_Viewer = "Displays the system calls trace and the app's error log";
+Description_Trace_Log = "Displays the system calls trace";
 Description_About_App = "App's version information";
 Description_Privacy_Policy = "Privacy policy for app (Link to the Internet site)";
 Description_Terms_of_Service = "App terms of service (Link to the Internet site)";

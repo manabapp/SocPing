@@ -22,6 +22,7 @@
 		6C4F5D0125959143007E43A6 /* SocOptval.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4F5D0025959143007E43A6 /* SocOptval.swift */; };
 		6C4F5D0425959157007E43A6 /* SocSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4F5D0325959157007E43A6 /* SocSocket.swift */; };
 		6C4F5D072595916B007E43A6 /* UInt8+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4F5D062595916B007E43A6 /* UInt8+Extension.swift */; };
+		6C6F441025DBA004003DFCFF /* String+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C6F440F25DBA004003DFCFF /* String+Extension.swift */; };
 		6C9560ED25A85EEE00712F97 /* index_ja.html in Resources */ = {isa = PBXBuildFile; fileRef = 6C9560EA25A85EEE00712F97 /* index_ja.html */; };
 		6C9560EE25A85EEE00712F97 /* index.html in Resources */ = {isa = PBXBuildFile; fileRef = 6C9560EB25A85EEE00712F97 /* index.html */; };
 		6C9560EF25A85EEE00712F97 /* apps.css in Resources */ = {isa = PBXBuildFile; fileRef = 6C9560EC25A85EEE00712F97 /* apps.css */; };
@@ -89,6 +90,7 @@
 		6C4F5D0025959143007E43A6 /* SocOptval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocOptval.swift; sourceTree = "<group>"; };
 		6C4F5D0325959157007E43A6 /* SocSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocSocket.swift; sourceTree = "<group>"; };
 		6C4F5D062595916B007E43A6 /* UInt8+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UInt8+Extension.swift"; sourceTree = "<group>"; };
+		6C6F440F25DBA004003DFCFF /* String+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extension.swift"; sourceTree = "<group>"; };
 		6C9560EA25A85EEE00712F97 /* index_ja.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = index_ja.html; path = docs/index_ja.html; sourceTree = SOURCE_ROOT; };
 		6C9560EB25A85EEE00712F97 /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = index.html; path = docs/index.html; sourceTree = SOURCE_ROOT; };
 		6C9560EC25A85EEE00712F97 /* apps.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; name = apps.css; path = docs/apps.css; sourceTree = SOURCE_ROOT; };
@@ -218,6 +220,7 @@
 				6C4F5CF1259590D6007E43A6 /* icmp.swift */,
 				6C4F5CEE259590A6007E43A6 /* Data+Extension.swift */,
 				6C4F5D062595916B007E43A6 /* UInt8+Extension.swift */,
+				6C6F440F25DBA004003DFCFF /* String+Extension.swift */,
 			);
 			path = LibSoc;
 			sourceTree = "<group>";
@@ -382,6 +385,7 @@
 				6C4F5D0125959143007E43A6 /* SocOptval.swift in Sources */,
 				6C4F5D0425959157007E43A6 /* SocSocket.swift in Sources */,
 				6C4F5CD925958F7D007E43A6 /* AppDelegate.swift in Sources */,
+				6C6F441025DBA004003DFCFF /* String+Extension.swift in Sources */,
 				6CB46758259593D100861A05 /* SocPingTracer.swift in Sources */,
 				6CB4674C2595936600861A05 /* SocPingPinger.swift in Sources */,
 				6CB467312595929200861A05 /* SocPingAddressManager.swift in Sources */,
@@ -552,17 +556,17 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"SocPing/Preview Content\"";
 				DEVELOPMENT_TEAM = DG8D574ZV8;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = SocPing/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = manabapp.SocPing;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "SocPing/SocPing-Bridging-Header.h";
@@ -579,17 +583,17 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"SocPing/Preview Content\"";
 				DEVELOPMENT_TEAM = DG8D574ZV8;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = SocPing/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = manabapp.SocPing;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "SocPing/SocPing-Bridging-Header.h";

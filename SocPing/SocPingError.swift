@@ -3,12 +3,14 @@
 //  SocPing
 //
 //  Created by Hirose Manabu on 2021/01/01.
+//  Changed by Hirose Manabu on 2021/02/12. (version 1.1)
 //
 
 import Foundation
 
 enum SocPingError: Error {
     case NoHostValue
+    case InvalidIpAddr
     case AlreadyAddressExist
     case ReservedAddress
     case AddressExceeded
@@ -25,6 +27,7 @@ extension SocPingError: LocalizedError {
     var message: String {
         switch self {
         case .NoHostValue: return NSLocalizedString("Message_NoHostValue", comment: "")
+        case .InvalidIpAddr: return NSLocalizedString("Message_InvalidIpAddr", comment: "")
         case .AlreadyAddressExist: return NSLocalizedString("Message_AlreadyAddressExist", comment: "")
         case .ReservedAddress: return NSLocalizedString("Message_ReservedAddress", comment: "")
         case .AddressExceeded: return NSLocalizedString("Message_AddressExceeded", comment: "")

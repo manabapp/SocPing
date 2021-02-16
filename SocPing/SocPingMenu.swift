@@ -3,6 +3,7 @@
 //  SocPing
 //
 //  Created by Hirose Manabu on 2021/01/01.
+//  Changed by Hirose Manabu on 2021/02/12. (version 1.1)
 //
 
 import Foundation
@@ -87,10 +88,10 @@ struct SocPingMenu: View {
                         Text("")
                     }
                     Button(action: {
-                        SocLogger.debug("SocPingMenu: Button: Log Viewer")
+                        SocLogger.debug("SocPingMenu: Button: Trace Log")
                         self.logText = SocLogger.getLog()
                     }) {
-                        CommonRaw(name:"Log Viewer", image:"note.text", detail:"Description_Log_Viewer")
+                        CommonRaw(name:"Trace Log", image:"note.text", detail:"Description_Trace_Log")
                     }
                 }
             }
@@ -554,54 +555,60 @@ fileprivate struct PingSettings: View {
     }
     
     func getInt(stringValue: String, min: Int, max: Int) throws -> Int {
-        if stringValue.isEmpty {
+        guard !stringValue.isEmpty else {
             throw SocPingError.NoValue
         }
         guard let value = Int(stringValue) else {
             throw SocPingError.InvalidValue
         }
-        if value < min || value > max {
+        guard value >= min && value <= max else {
             throw SocPingError.InvalidValue
         }
         return value
     }
     
     func getMSec(stringValue: String, min: Double, max: Double) throws -> Int {
-        if stringValue.isEmpty {
+        guard !stringValue.isEmpty else {
             throw SocPingError.NoValue
         }
         guard let value = Double(stringValue) else {
             throw SocPingError.InvalidValue
         }
-        if value < min || value > max {
+        guard value >= min && value <= max else {
             throw SocPingError.InvalidValue
         }
         return Int(value * 1000.0)
     }
     
     func getSweeping() throws -> (Int, Int, Int) {
-        if self.stringSweepingMin.isEmpty || self.stringSweepingMax.isEmpty || self.stringSweepingIncr.isEmpty {
+        guard !self.stringSweepingMin.isEmpty else {
+            throw SocPingError.NoValue
+        }
+        guard !self.stringSweepingMax.isEmpty else {
+            throw SocPingError.NoValue
+        }
+        guard !self.stringSweepingIncr.isEmpty else {
             throw SocPingError.NoValue
         }
         guard let sweepingMin = Int(self.stringSweepingMin) else {
             throw SocPingError.InvalidValue
         }
-        if sweepingMin < 0 || sweepingMin > UInt16.max - 1 {
+        guard sweepingMin >= 0 && sweepingMin < UInt16.max else {
             throw SocPingError.InvalidValue
         }
         guard let sweepingMax = Int(self.stringSweepingMax) else {
             throw SocPingError.InvalidValue
         }
-        if sweepingMax < 1 || sweepingMax > UInt16.max {
+        guard sweepingMax > 0 && sweepingMax <= UInt16.max else {
             throw SocPingError.InvalidValue
         }
         guard let sweepingIncr = Int(self.stringSweepingIncr) else {
             throw SocPingError.InvalidValue
         }
-        if sweepingIncr < 1 || sweepingIncr > UInt16.max {
+        guard sweepingIncr > 0 && sweepingIncr <= UInt16.max else {
             throw SocPingError.InvalidValue
         }
-        if sweepingMin >= sweepingMax {
+        guard sweepingMin < sweepingMax else {
             throw SocPingError.InvalidValue
         }
         return (sweepingMin, sweepingMax, sweepingIncr)
@@ -1090,48 +1097,51 @@ fileprivate struct TracerouteSettings: View {
     }
     
     func getInt(stringValue: String, min: Int, max: Int) throws -> Int {
-        if stringValue.isEmpty {
+        guard !stringValue.isEmpty else {
             throw SocPingError.NoValue
         }
         guard let value = Int(stringValue) else {
             throw SocPingError.InvalidValue
         }
-        if value < min || value > max {
+        guard value >= min && value <= max else {
             throw SocPingError.InvalidValue
         }
         return value
     }
     
     func getMSec(stringValue: String, min: Double, max: Double) throws -> Int {
-        if stringValue.isEmpty {
+        guard !stringValue.isEmpty else {
             throw SocPingError.NoValue
         }
         guard let value = Double(stringValue) else {
             throw SocPingError.InvalidValue
         }
-        if value < min || value > max {
+        guard value >= min && value <= max else {
             throw SocPingError.InvalidValue
         }
         return Int(value * 1000.0)
     }
     
     func getTtl() throws -> (Int, Int) {
-        if self.stringTtlFirst.isEmpty || self.stringTtlMax.isEmpty {
+        guard !self.stringTtlFirst.isEmpty else {
+            throw SocPingError.NoValue
+        }
+        guard !self.stringTtlMax.isEmpty else {
             throw SocPingError.NoValue
         }
         guard let ttlFirst = Int(self.stringTtlFirst) else {
             throw SocPingError.InvalidValue
         }
-        if ttlFirst < 1 || ttlFirst > UInt8.max {
+        guard ttlFirst > 0 && ttlFirst <= UInt8.max else {
             throw SocPingError.InvalidValue
         }
         guard let ttlMax = Int(self.stringTtlMax) else {
             throw SocPingError.InvalidValue
         }
-        if ttlMax < 1 || ttlMax > UInt8.max {
+        guard ttlMax > 0 && ttlMax <= UInt8.max else {
             throw SocPingError.InvalidValue
         }
-        if ttlMax < ttlFirst {
+        guard ttlMax >= ttlFirst else {
             throw SocPingError.InvalidValue
         }
         return (ttlFirst, ttlMax)
@@ -1739,26 +1749,26 @@ fileprivate struct OnePingSettings: View {
     }
     
     func getInt(stringValue: String, min: Int, max: Int) throws -> Int {
-        if stringValue.isEmpty {
+        guard !stringValue.isEmpty else {
             throw SocPingError.NoValue
         }
         guard let value = Int(stringValue) else {
             throw SocPingError.InvalidValue
         }
-        if value < min || value > max {
+        guard value >= min && value <= max else {
             throw SocPingError.InvalidValue
         }
         return value
     }
     
     func getMSec(stringValue: String, min: Double, max: Double) throws -> Int {
-        if stringValue.isEmpty {
+        guard !stringValue.isEmpty else {
             throw SocPingError.NoValue
         }
         guard let value = Double(stringValue) else {
             throw SocPingError.InvalidValue
         }
-        if value < min || value > max {
+        guard value >= min && value <= max else {
             throw SocPingError.InvalidValue
         }
         return Int(value * 1000.0)
@@ -1840,7 +1850,7 @@ fileprivate struct SocPingLogViewer: View {
                     .frame(height: 110)
                 }
             }
-            .navigationBarTitle(Text("Log Viewer"), displayMode: .inline)
+            .navigationBarTitle(Text("Trace Log"), displayMode: .inline)
             .blur(radius: isAlerting ? 2 : 0)
             
             if isAlerting {
@@ -1911,7 +1921,7 @@ fileprivate struct AboutApp: View {
                 .padding(.bottom, 5)
             }
             
-            Text("Support OS: iOS 14.0 or newer")
+            Text("Support OS: iOS 14.1 or newer")
                 .font(.system(size: 11))
             Text("Localization: en, ja")
                 .font(.system(size: 11))

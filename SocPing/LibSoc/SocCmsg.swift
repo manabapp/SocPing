@@ -3,6 +3,7 @@
 //  LibSoc - Swifty POSIX Socket Library
 //
 //  Created by Hirose Manabu on 2021/01/01.
+//  Changed by Hirose Manabu on 2021/02/12. (version 1.1)
 //
 
 import Darwin
@@ -10,88 +11,113 @@ import Foundation
 
 struct SocCmsg {
     let hdr: cmsghdr
-    var tv: timeval = timeval()
-    var integer: Int = 0
-    var name: String = ""
-    var ether: String = ""
-    var data: Data = Data()
+    var data: Data
     
-    init(_ hdr: cmsghdr) {
-        self.hdr = hdr
+    var levelName: String {
+        var levelName = String(hdr.cmsg_level)
+        for i in 0 ..< Self.cmsgLevels.count {
+            if Self.cmsgLevels[i] == hdr.cmsg_level {
+                levelName = Self.cmsgLevelNames[i]
+                break
+            }
+        }
+        return levelName
     }
     
-    static let typeData: Int = 0  // Default
-    static let typeTv: Int = 1
-    static let typeDl: Int = 2
-
+    var typeName: String {
+        var typeName = String(hdr.cmsg_type)
+        switch hdr.cmsg_level {
+        case SOL_SOCKET:
+            for i in 0 ..< Self.solCmsgTypes.count {
+                if Self.solCmsgTypes[i] == hdr.cmsg_type {
+                    typeName = Self.solCmsgTypeNames[i]
+                    break
+                }
+            }
+        case IPPROTO_IP:
+            for i in 0 ..< Self.ipCmsgTypes.count {
+                if Self.ipCmsgTypes[i] == hdr.cmsg_type {
+                    typeName = Self.ipCmsgTypeNames[i]
+                    break
+                }
+            }
+        default:
+            break
+        }
+        return typeName
+    }
+    
+    var uint8array: [UInt8] {
+        var bytes: [UInt8] = []
+        var cmsgHdr = self.hdr
+        bytes += Data(bytes: &cmsgHdr, count: MemoryLayout<cmsghdr>.size).uint8array!
+        bytes += self.data.uint8array!
+        let cmsgLen = MemoryLayout<cmsghdr>.size + self.data.count
+        let cmsgSpace = ((cmsgLen + 3) / 4) * 4  //CMSG_SPACE
+        bytes += [UInt8](repeating: 0, count: cmsgSpace - cmsgLen)
+        return bytes
+    }
+    
     static let cmsgLevels = [SOL_SOCKET, IPPROTO_IP]
     static let cmsgLevelNames = ["SOL_SOCKET", "IPPROTO_IP"]
-    static let solCmsgTypes = [
-        (SCM_RIGHTS,              SocCmsg.typeData, "SCM_RIGHTS"),
-        (SCM_TIMESTAMP,           SocCmsg.typeTv,   "SCM_TIMESTAMP"),
-        (SCM_CREDS,               SocCmsg.typeData, "SCM_CREDS"),
-        (SCM_TIMESTAMP_MONOTONIC, SocCmsg.typeData, "SCM_TIMESTAMP_MONOTONIC")
-    ]
-    static let ipCmsgTypes = [
-        (IP_RECVIF, SocCmsg.typeDl, "IP_RECVIF")
-    ]
-
-    static func createCmsgs(control: Data, length: Int) -> [SocCmsg] {
+    static let solCmsgTypes = [SCM_RIGHTS, SCM_TIMESTAMP, SCM_CREDS, SCM_TIMESTAMP_MONOTONIC]
+    static let solCmsgTypeNames = ["SCM_RIGHTS", "SCM_TIMESTAMP", "SCM_CREDS", "SCM_TIMESTAMP_MONOTONIC"]
+    static let ipCmsgTypes = [IP_RECVOPTS, IP_RECVRETOPTS, IP_RECVDSTADDR, IP_RETOPTS, IP_RECVIF, IP_RECVTTL, IP_PKTINFO, IP_RECVTOS]
+    static let ipCmsgTypeNames = ["IP_RECVOPTS", "IP_RECVRETOPTS", "IP_RECVDSTADDR", "IP_RETOPTS", "IP_RECVIF", "IP_RECVTTL", "IP_PKTINFO", "IP_RECVTOS"]
+    
+    static func loadCmsgs(control: Data, length: Int) -> [SocCmsg] {
         var cmsgs: [SocCmsg] = []
         var offset: Int = 0
         
         while length >= offset + 12 {
-            let cmsgHdr = Data(control[offset ..< offset + 12]).withUnsafeBytes { $0.load(as: cmsghdr.self) }
-            var cmsg = SocCmsg(cmsgHdr)
-            var valType = SocCmsg.typeData
-            if cmsg.hdr.cmsg_level == SOL_SOCKET {
-                for i in 0 ..< SocCmsg.solCmsgTypes.count {
-                    if SocCmsg.solCmsgTypes[i].0 == cmsg.hdr.cmsg_type {
-                        valType = SocCmsg.solCmsgTypes[i].1
-                        break
-                    }
-                }
+            let cmsgHdr = Data(control[offset ..< offset + MemoryLayout<cmsghdr>.size]).withUnsafeBytes { $0.load(as: cmsghdr.self) }
+            let dataBase = offset + MemoryLayout<cmsghdr>.size
+            let dataLen = Int(cmsgHdr.cmsg_len) - MemoryLayout<cmsghdr>.size
+            if dataLen > 0 {
+                let data = Data(control[dataBase ..< dataBase + dataLen])
+                let cmsg = SocCmsg(hdr: cmsgHdr, data: data)
+                cmsgs.append(cmsg)
             }
-            if cmsg.hdr.cmsg_level == IPPROTO_IP {
-                for i in 0 ..< SocCmsg.ipCmsgTypes.count {
-                    if SocCmsg.ipCmsgTypes[i].0 == cmsg.hdr.cmsg_type {
-                        valType = SocCmsg.ipCmsgTypes[i].1
-                        break
-                    }
-                }
-            }
-            switch valType {
-            case SocCmsg.typeTv:
-                cmsg.tv = Data(control[offset + 12 ..< offset + Int(cmsg.hdr.cmsg_len)]).withUnsafeBytes { $0.load(as: timeval.self) }
-            
-            case SocCmsg.typeDl:
-                let sdl = Data(control[offset + 12 ..< offset + Int(cmsg.hdr.cmsg_len)]).withUnsafeBytes { $0.load(as: sockaddr_dl.self) }
-                cmsg.integer = Int(sdl.sdl_index)
-                
-                var sdlData = sdl.sdl_data
-                withUnsafeMutablePointer(to: &sdlData) { sdlPtr in
-                    sdlPtr.withMemoryRebound(to: UInt8.self, capacity: Int(sdl.sdl_nlen + sdl.sdl_alen)) {
-                        let sdlNamePtr = UnsafeBufferPointer(start: $0, count: Int(sdl.sdl_nlen))
-                        let uint8array = [UInt8](UnsafeBufferPointer(start: sdlNamePtr.baseAddress!, count: Int(sdl.sdl_nlen)))
-                        cmsg.name = String(bytes: uint8array, encoding: .utf8)!
-
-                        let sdlAddrPtr = UnsafeBufferPointer(start: $0 + Int(sdl.sdl_nlen), count: Int(sdl.sdl_alen))
-                        if sdlAddrPtr.count == 6 {
-                            cmsg.ether = sdlAddrPtr.map { String(format:"%02hhx", $0)}.joined(separator: ":")
-                        }
-                    }
-                }
-                
-            default:  // SocCmsg.typeData
-                cmsg.data = Data(control[offset + 12 ..< offset + Int(cmsg.hdr.cmsg_len)])
-            }
-            cmsgs.append(cmsg)
-            offset += Int((cmsg.hdr.cmsg_len + 3) & ~3)
+            offset += Int((cmsgHdr.cmsg_len + 3) & ~3)
         }
         return cmsgs
     }
     
-    static func createData(cmsgs: [SocCmsg]) -> Data {
-        return Data()
+    static func createRightsCmsg(fds: [Int32]) throws -> SocCmsg {
+        var val = fds
+        guard fds.count > 0 else {
+            throw SocError.InvalidParameter
+        }
+        let cmsgLen = socklen_t(MemoryLayout<cmsghdr>.size + MemoryLayout<Int32>.size * fds.count)  //CMSG_LEN(sizeof(int) * len(fds))
+        let cmsgHdr = cmsghdr(cmsg_len: cmsgLen, cmsg_level: SOL_SOCKET, cmsg_type: SCM_RIGHTS)
+        let data = Data(bytes: &val, count: MemoryLayout<Int32>.size * fds.count)
+        let cmsg = SocCmsg(hdr: cmsgHdr, data: data)
+        return cmsg
+    }
+    
+    static func createCredsCmsg() -> SocCmsg {
+        let cmsgLen = socklen_t(MemoryLayout<cmsghdr>.size + 82)  //CMSG_LEN(sizeof(struct cmsgcred))
+        let cmsgHdr = cmsghdr(cmsg_len: cmsgLen, cmsg_level: SOL_SOCKET, cmsg_type: SCM_CREDS)
+        let data = Data([UInt8](repeating: 0, count: 82))
+        let cmsg = SocCmsg(hdr: cmsgHdr, data: data)
+        return cmsg
+    }
+    
+    static func createRetoptsCmsg(opts: ip_opts) -> SocCmsg {
+        let cmsgLen = socklen_t(MemoryLayout<cmsghdr>.size + MemoryLayout<ip_opts>.size)  //CMSG_LEN(sizeof(struct ip_opts))
+        let cmsgHdr = cmsghdr(cmsg_len: cmsgLen, cmsg_level: IPPROTO_IP, cmsg_type: IP_RETOPTS)
+        var val = opts
+        let data = Data(bytes: &val, count: MemoryLayout<ip_opts>.size)
+        let cmsg = SocCmsg(hdr: cmsgHdr, data: data)
+        return cmsg
+    }
+    
+    static func createPktinfoCmsg(pktinfo: in_pktinfo) -> SocCmsg {
+        let cmsgLen = socklen_t(MemoryLayout<cmsghdr>.size + MemoryLayout<in_pktinfo>.size)  //CMSG_LEN(sizeof(struct pktinfo))
+        let cmsgHdr = cmsghdr(cmsg_len: cmsgLen, cmsg_level: IPPROTO_IP, cmsg_type: IP_PKTINFO)
+        var val = pktinfo
+        let data = Data(bytes: &val, count: MemoryLayout<in_pktinfo>.size)
+        let cmsg = SocCmsg(hdr: cmsgHdr, data: data)
+        return cmsg
     }
 }

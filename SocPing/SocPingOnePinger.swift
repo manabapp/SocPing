@@ -3,10 +3,12 @@
 //  SocPing
 //
 //  Created by Hirose Manabu on 2021/01/01.
+//  Changed by Hirose Manabu on 2021/02/12. (version 1.1)
 //
 
 import SwiftUI
 import Darwin
+import StoreKit
 
 struct SocPingOnePinger: View {
     @EnvironmentObject var object: SocPingSharedObject
@@ -121,6 +123,12 @@ struct SocPingOnePinger: View {
                             if self.isInterrupted {
                                 self.isInterrupted = false
                                 SocLogger.debug("SocPingOnePinger: isInterrupted = \(self.isInterrupted)")
+                            }
+                            
+                            if object.oneSettingVerbose {
+                                if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                                    SKStoreReviewController.requestReview(in: scene)
+                                }
                             }
                         }
                     }
@@ -415,7 +423,7 @@ struct SocPingOnePinger: View {
         let sent: size_t
         Darwin.gettimeofday(&sendTv, nil)
         SocLogger.debug("SocPingOnePinger.sendEcho: gettimeofday = \(String(format: "%d.%06d", sendTv.tv_sec, sendTv.tv_usec))")
-        sent = try socket.sendto(data: datagram, address: echo.address)
+        sent = try socket.sendto(data: datagram, flags: 0, address: echo.address)
         self.cntSent += 1
         if object.oneSettingVerbose {
             DispatchQueue.main.async {
@@ -430,7 +438,7 @@ struct SocPingOnePinger: View {
                 self.output()  // blank
             }
         }
-        if sent != datagram.count {
+        guard sent == datagram.count else {
             SocLogger.debug("SocPingOnePinger.sendEcho: partial sent (\(sent) bytes)")
             return
         }
@@ -453,8 +461,9 @@ struct SocPingOnePinger: View {
         
         var buffers: [Data] = []
         buffers.append(Data([UInt8](repeating: 0, count: 65536)))  // Maximum size of IPv4 packet (IP_MAXPACKET) is 65535
-        var control = Data([UInt8](repeating: 0, count: 28))
-        let (received, from, controlLen, _) = try socket.recvmsg(datas: &buffers, control: &control)
+//        var control = Data([UInt8](repeating: 0, count: 28))
+//        func recvmsg(datas: inout [Data], controlLen: Int, flags: Int32, needAddress: Bool) throws -> (Int, [SocCmsg], Int32, SocAddress?) {
+        let (received, cmsgs, _, from) = try socket.recvmsg(datas: &buffers, controlLen: 28, flags: 0, needAddress: true)
         Darwin.gettimeofday(&recvTv, nil)  // Rewrites timestamp gotton from cmsg if  SO_TIMESTAMP is set
         SocLogger.debug("SocPingOnePinger.recvEchoreply: \(received) bytes received")
         SocLogger.debug("SocPingOnePinger.recvEchoreply: gettimeofday = \(String(format: "%d.%06d", recvTv.tv_sec, recvTv.tv_usec))")
@@ -469,14 +478,14 @@ struct SocPingOnePinger: View {
         }
         let ipHdrLen = (received > 0) ? SocPingEcho.getIpHdrLen(base: data, offset: 0) : 0
         var msg = "\(received - ipHdrLen) bytes from "
-        if from == nil {
+        if let address = from {
+            msg += "\(address.addr):"
+        }
+        else {
             SocLogger.error("SocPingOnePinger.recvEchoreply: recvmsg() no from address")  // no reachable
             msg += "unknown:"
         }
-        else {
-            msg += "\(from!.addr):"
-        }
-        if received < ipHdrLen + ICMP_HDRLEN {
+        guard received >= ipHdrLen + ICMP_HDRLEN else {
             self.outputAsyncVerbose()  // blank
             self.outputAsync("\(msg) packet too short")
             self.outputAsyncVerbose()  // blank
@@ -492,7 +501,7 @@ struct SocPingOnePinger: View {
         self.printIcmpHdr(icmpHdr)
         
         if echo.proto == IPPROTO_ICMP && icmpHdr.icmp_type == ICMP_ECHOREPLY {
-            if icmpHdr.icmp_id != echo.id {
+            guard icmpHdr.icmp_id == echo.id else {
                 SocLogger.debug("SocPingOnePinger.recvEchoreply: \(icmpHdr.typeMessage) - invalid ICMP id = \(icmpHdr.icmp_id)")
                 return
             }
@@ -500,7 +509,7 @@ struct SocPingOnePinger: View {
         }
         else if echo.proto == IPPROTO_UDP && icmpHdr.icmp_type == ICMP_UNREACH && icmpHdr.icmp_code == ICMP_UNREACH_PORT {
             let ipHdrLen2 = (received > ipHdrLen + ICMP_HDRLEN) ? SocPingEcho.getIpHdrLen(base: data, offset: ipHdrLen + ICMP_HDRLEN) : 0
-            if received < ipHdrLen + ICMP_HDRLEN + ipHdrLen2 + UDP_HDRLEN {
+            guard received >= ipHdrLen + ICMP_HDRLEN + ipHdrLen2 + UDP_HDRLEN else {
                 SocLogger.debug("SocPingOnePinger.recvEchoreply: \(icmpHdr.typeMessage) - including IP packet too short")
                 return
             }
@@ -508,7 +517,7 @@ struct SocPingOnePinger: View {
             self.printIpHdr(ipHdr2)
             let udpHdr = SocPingEcho.getUdpHdr(base: data, offset: ipHdrLen + ICMP_HDRLEN + ipHdrLen2)
             self.printUdpHdr(udpHdr)
-            if udpHdr.uh_dport != echo.port {
+            guard udpHdr.uh_dport == echo.port else {
                 SocLogger.debug("SocPingOnePinger.recvEchoreply: \(icmpHdr.typeMessage) - invalid UDP port = \(udpHdr.uh_dport)")
                 return
             }
@@ -518,25 +527,25 @@ struct SocPingOnePinger: View {
             if icmpHdr.hasIpHdr {
                 let ipHdrLen2 = (received > ipHdrLen + ICMP_HDRLEN) ? SocPingEcho.getIpHdrLen(base: data, offset: ipHdrLen + ICMP_HDRLEN) : 0
                 let protoHdrLen = echo.proto == IPPROTO_ICMP ? ICMP_HDRLEN : UDP_HDRLEN
-                if received < ipHdrLen + ICMP_HDRLEN + ipHdrLen2 + protoHdrLen {
+                guard received >= ipHdrLen + ICMP_HDRLEN + ipHdrLen2 + protoHdrLen else {
                     SocLogger.debug("SocPingOnePinger.recvEchoreply: \(icmpHdr.typeMessage) - including IP packet too short")
                     return
                 }
                 let ipHdr2 = SocPingEcho.getIpHdr(base: data, offset: ipHdrLen + ICMP_HDRLEN)
                 self.printIpHdr(ipHdr2)
                 // No check IP address(ipHdr2.dstAddr) because it may be change with Loose Source Routing
-                if ipHdr2.ip_p != echo.proto {
+                guard ipHdr2.ip_p == echo.proto else {
                     SocLogger.debug("SocPingOnePinger.recvEchoreply: \(icmpHdr.typeMessage) - unexpected echo packet (IP Proto: \(ipHdr2.ip_p))")
                     return
                 }
                 if ipHdr2.ip_p == IPPROTO_ICMP {
                     let icmpHdr2 = SocPingEcho.getIcmpHdr(base: data, offset: ipHdrLen + ICMP_HDRLEN + ipHdrLen2)
                     self.printIcmpHdr(icmpHdr2)
-                    if icmpHdr2.icmp_type != ICMP_ECHO {
+                    guard icmpHdr2.icmp_type == ICMP_ECHO else {
                         SocLogger.debug("SocPingOnePinger.recvEchoreply: \(icmpHdr.typeMessage) - unexpected echo packet (ICMP Type: \(icmpHdr2.icmp_type))")
                         return
                     }
-                    if icmpHdr2.icmp_id != echo.id {
+                    guard icmpHdr2.icmp_id == echo.id else {
                         SocLogger.debug("SocPingOnePinger.recvEchoreply: \(icmpHdr.typeMessage) - unexpected echo packet (ICMP Id: \(icmpHdr2.icmp_id))")
                         return
                     }
@@ -544,7 +553,7 @@ struct SocPingOnePinger: View {
                 else {
                     let udpHdr2 = SocPingEcho.getUdpHdr(base: data, offset: ipHdrLen + ICMP_HDRLEN + ipHdrLen2)
                     self.printUdpHdr(udpHdr2)
-                    if udpHdr2.uh_dport != echo.port {
+                    guard udpHdr2.uh_dport == echo.port else {
                         SocLogger.debug("SocPingOnePinger.recvEchoreply: \(icmpHdr.typeMessage) - unexpected echo packet (UDP Port: \(udpHdr2.uh_dport))")
                         return
                     }
@@ -558,24 +567,14 @@ struct SocPingOnePinger: View {
         }
         self.cntReceived += 1
         var hasCmsgTv = false
-        if object.oneSettingVerbose {
-            DispatchQueue.main.async {
-                self.output()  // blank
-                self.output("Control data: \(controlLen) bytes received")
-                self.dump(base: control, length: controlLen)
-                self.output()  // blank
-            }
-        }
-        let cmsgs = SocCmsg.createCmsgs(control: control, length: controlLen)
-        let isPrintIndex = cmsgs.count > 1
-        for i in 0 ..< cmsgs.count {
-            if isPrintIndex {
-                self.outputAsyncVerbose(" Cmsg[\(i)]")
-            }
-            self.printCmsg(cmsgs[i])
-            if cmsgs[i].hdr.cmsg_level == SOL_SOCKET && cmsgs[i].hdr.cmsg_type == SCM_TIMESTAMP {
-                recvTv = cmsgs[i].tv
-                hasCmsgTv = true
+        if cmsgs.count > 0 {
+            self.outputAsyncVerbose("\nControl Message:")
+            for i in 0 ..< cmsgs.count {
+                self.printCmsg(cmsgs[i])
+                if cmsgs[i].hdr.cmsg_level == SOL_SOCKET && cmsgs[i].hdr.cmsg_type == SCM_TIMESTAMP {
+                    recvTv = cmsgs[i].data.withUnsafeBytes { $0.load(as: timeval.self) }
+                    hasCmsgTv = true
+                }
             }
         }
         self.outputAsyncVerbose()  // blank
@@ -678,7 +677,7 @@ struct SocPingOnePinger: View {
     }
     
     func printIpHdr(_ ipHdr: ip) {
-        if !object.oneSettingVerbose {
+        guard object.oneSettingVerbose else {
             return
         }
         DispatchQueue.main.async {
@@ -712,7 +711,7 @@ struct SocPingOnePinger: View {
     }
     
     func printIpOptions(_ options: Data) {
-        if !object.oneSettingVerbose {
+        guard object.oneSettingVerbose else {
             return
         }
         DispatchQueue.main.async {
@@ -769,7 +768,7 @@ struct SocPingOnePinger: View {
     }
     
     func printIcmpHdr(_ icmpHdr: icmp) {
-        if !object.oneSettingVerbose {
+        guard object.oneSettingVerbose else {
             return
         }
         DispatchQueue.main.async {
@@ -808,7 +807,7 @@ struct SocPingOnePinger: View {
     }
     
     func printUdpHdr(_ udpHdr: udphdr) {
-        if !object.oneSettingVerbose {
+        guard object.oneSettingVerbose else {
             return
         }
         DispatchQueue.main.async {
@@ -820,40 +819,24 @@ struct SocPingOnePinger: View {
     }
     
     func printCmsg(_ cmsg: SocCmsg) {
-        if !object.oneSettingVerbose {
+        guard object.oneSettingVerbose else {
             return
-        }
-        var levelName = String(cmsg.hdr.cmsg_level)
-        var typeName = String(cmsg.hdr.cmsg_type)
-        var valType = SocCmsg.typeData
-        for i in 0 ..< SocCmsg.cmsgLevels.count {
-            if SocCmsg.cmsgLevels[i] == cmsg.hdr.cmsg_level {
-                levelName = SocCmsg.cmsgLevelNames[i]
-                break
-            }
-        }
-        if cmsg.hdr.cmsg_level == SOL_SOCKET {
-            for i in 0 ..< SocCmsg.solCmsgTypes.count {
-                if SocCmsg.solCmsgTypes[i].0 == cmsg.hdr.cmsg_type {
-                    valType = SocCmsg.solCmsgTypes[i].1
-                    typeName = SocCmsg.solCmsgTypes[i].2
-                    break
-                }
-            }
         }
         DispatchQueue.main.async {
             self.output(" -> CMSG Length  : \(String(format: "%04x              (%d)", cmsg.hdr.cmsg_len, cmsg.hdr.cmsg_len))")
-            self.output(" -> CMSG Level   : \(String(format: "%04x              (%d)", cmsg.hdr.cmsg_level, cmsg.hdr.cmsg_level)) \(levelName)")
-            self.output(" -> CMSG Type    : \(String(format: "%04x              (%d)", cmsg.hdr.cmsg_type, cmsg.hdr.cmsg_type)) \(typeName)")
-            switch valType {
-            case SocCmsg.typeTv:
-                let tvString = String(format: "%08x %08x (%d.%06d)", cmsg.tv.tv_sec, cmsg.tv.tv_usec, cmsg.tv.tv_sec, cmsg.tv.tv_usec)
+            self.output(" -> CMSG Level   : \(String(format: "%04x              (%d)", cmsg.hdr.cmsg_level, cmsg.hdr.cmsg_level)) \(cmsg.levelName)")
+            self.output(" -> CMSG Type    : \(String(format: "%04x              (%d)", cmsg.hdr.cmsg_type, cmsg.hdr.cmsg_type)) \(cmsg.typeName)")
+            if cmsg.hdr.cmsg_level == SOL_SOCKET && cmsg.hdr.cmsg_type == SCM_TIMESTAMP {
+                let tv = cmsg.data.withUnsafeBytes { $0.load(as: timeval.self) }
+                let tvString = String(format: "%08x %08x (%d.%06d)", tv.tv_sec, tv.tv_usec, tv.tv_sec, tv.tv_usec)
                 self.output(" -> CMSG Data    : \(tvString)")
-                SocLogger.debug("SocCmsg.printCmsg: Len=\(cmsg.hdr.cmsg_len),Level=\(levelName),Type=\(typeName),Tv=\(tvString)")
-            default:
+                SocLogger.debug("SocPingOnePinger.printCmsg: Len=\(cmsg.hdr.cmsg_len),Level=\(cmsg.levelName),Type=\(cmsg.typeName),Tv=\(tvString)")
+            }
+            else {
                 self.output(" -> CMSG Data    : ")
                 self.dump(base: cmsg.data, length: cmsg.data.count)
-                SocLogger.debug("SocCmsg.printCmsg: Len=\(cmsg.hdr.cmsg_len),Level=\(levelName),Type=\(typeName),Data=\(cmsg.data.count)bytes")
+                self.output()
+                SocLogger.debug("SocPingOnePinger.printCmsg: Len=\(cmsg.hdr.cmsg_len),Level=\(cmsg.levelName),Type=\(cmsg.typeName),Data=\(cmsg.data.count)bytes")
             }
         }
     }

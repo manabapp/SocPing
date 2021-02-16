@@ -3,6 +3,7 @@
 //  LibSoc - Swifty POSIX Socket Library
 //
 //  Created by Hirose Manabu on 2021/01/01.
+//  Changed by Hirose Manabu on 2021/02/12. (version 1.1)
 //
 
 import Darwin
@@ -13,6 +14,7 @@ enum SocError: Error {
     case ResolveError(code: Int32)
     case InvalidAddress(addr: String)
     case InvalidParameter
+    case FileDeleteError
     case NotInitialized
     case InternalError
     
@@ -32,6 +34,7 @@ extension SocError: LocalizedError {
         case .ResolveError(_): return "Error occurred in gethostbyname."
         case .InvalidAddress(_): return "Invalid address format."
         case .InvalidParameter: return "Invalid parameter."
+        case .FileDeleteError: return "Error occurred in deleting socket file."
         case .NotInitialized: return "Not initialized."
         default: return "Internal Error."
         }
@@ -41,7 +44,7 @@ extension SocError: LocalizedError {
 extension SocError {
     var detail: String {
         switch self {
-        case .SocketError(let code, _): return "errno=\(code)[\(errnoNames[Int(code)])]\n" + String(cString: strerror(code))
+        case .SocketError(let code, _): return "errno=\(code)[\(ERRNO_NAMES[Int(code)])]\n" + String(cString: strerror(code))
         case .ResolveError(let code): return "h_errno=\(code)\n" + String(cString: gai_strerror(code))
         case .InvalidAddress(let addr): return addr
         default: return ""
@@ -52,7 +55,7 @@ extension SocError {
 //=====================
 // Global defines
 //=====================
-let errnoNames: [String] = [
+let ERRNO_NAMES: [String] = [
     "EDUMMY",           // 0: Dummy, no use
     "EPERM",            // 1: Operation not permitted
     "ENOENT",           // 2: No such file or directory

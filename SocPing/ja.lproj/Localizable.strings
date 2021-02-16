@@ -3,7 +3,8 @@
   SocPing
 
   Created by Hirose Manabu on 2021/01/01.
-  
+  Changed by Hirose Manabu on 2021/02/12. (version 1.1)
+
 */
 
 ToS_Title = "利用規約";
@@ -12,6 +13,7 @@ ToS_Agree = "同意する";
 Message_Copied_to_clipboard = "クリップボードにコピーしました。";
 Message_Multiple_actions_not_possible = "多重実行はできません。";
 Message_NoHostValue = "IP アドレスまたはホスト名が指定されていません。";
+Message_InvalidIpAddr = "不正な IP アドレス形式です。";
 Message_AlreadyAddressExist = "同じアドレスが既に登録されています。";
 Message_ReservedAddress = "ローカルアドレスとして使用されています。";
 Message_AddressExceeded = "アドレス登録数の上限に達しました。";
@@ -45,7 +47,7 @@ Description_App_Settings = "アプリの動作設定および画面設定を変�
 Description_One_Ping_Settings = "One Ping 機能のオプション設定を変更する";
 Description_Ping_Settings = "Ping 機能のオプション設定を変更する";
 Description_Traceroute_Settings = "Traceroute 機能のオプション設定を変更する";
-Description_Log_Viewer = "システムコールトレース情報とアプリのエラーログを表示する";
+Description_Trace_Log = "システムコールトレース情報を表示する";
 Description_About_App = "アプリのバージョン情報";
 Description_Privacy_Policy = "アプリのプライバシーポリシー（外部インターネットサイト）";
 Description_Terms_of_Service = "アプリの利用規約（外部インターネットサイト）";
@@ -131,7 +133,7 @@ Footer_INTERFACE_LIST = "端末のネットワークインターフェースの�
 Footer_ORDER_OF_GATEWAYS = "ルーズ・ソースルーティング（LSRR）における中継ルータを順番に指定して登録します。最大 8 個まで登録できます。";
 Footer_app_DESCRIPTION = "設定項目およびアドレス行に説明を表示します。\n";
 Footer_app_IDLE_TIMER = "Ping 実行中の遮断を避けるため、iOS のアイドルタイマーを無効にします。\n";
-Footer_app_SCREEN_COLOR = "コンソールと Log Viewer の背景色を反転させます。本設定が無効の場合は、端末設定の外観モードに合わせます。\n";
+Footer_app_SCREEN_COLOR = "コンソールとログ表示画面の背景色を反転させます。本設定が無効の場合は、端末設定の外観モードに合わせます。\n";
 Footer_app_SYSTEM_CALL_TRACE = "システムコールトレースの出力レベルを選択します。send/recv における送受信データの出力方法は以下のとおりです。10,000 行に達するとトレースが停止します（リセットにより再開可）。\n\nレベル 1: データを出力しない\nレベル 2: 最初の 16 バイトをシステムコール行に含める\nレベル 3: システムコールに加えて 16 進ダンプを出力する\n";
 Footer_app_DEBUG = "エラーログに加え、アプリのデバッグログを出力します。アプリのエラーログは常時出力されます。\n注: デバッグログは、開発者向けのため一般の使用は想定していません。\n";
 Footer_ping_PAYLOAD = "ペイロードのデータ種別とデータサイズ（単位: バイト）を指定します。「連続値」は、 1 バイトずつ 0x00 から 0xFF までインクリメントしたデータです。「ランダム」は、0x00 から 0xFF までのランダムデータです。「スイープ」を選択した場合は、1 パケットずつ開始値から最大値まで指定した増分サイズだけパケットサイズをインクリメントしながら Ping を連続実行します。\n";

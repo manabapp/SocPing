@@ -3,6 +3,7 @@
 //  LibSoc - Swifty POSIX Socket Library
 //
 //  Created by Hirose Manabu on 2021/01/01.
+//  Changed by Hirose Manabu on 2021/02/12. (version 1.1)
 //
 
 import Darwin
@@ -18,23 +19,29 @@ class SocLogger {
     static var isDebug: Bool = false    // output with debug()
     static var traceLevel: Int = traceLevelNoData
     
-    static let traceLevelNoData: Int = 0  // No data in send/recv system call
-    static let traceLevelInLine: Int = 1  // Includes first 16 bytes into the line of send/recv system call
-    static let traceLevelHexDump: Int = 2  // Hex dump in addtion to send/recv system call
+    static let traceLevelNoData: Int = 0  // Level 1: No data in send/recv system call
+    static let traceLevelInLine: Int = 1  // Level 2: Includes first 16 bytes into the line of send/recv system call
+    static let traceLevelHexDump: Int = 2 // Level 3: Hex dump in addtion to send/recv system call
     
     static let logMaxLines = 10000
     static let dumpMaxSize = 512
     static let logDumpMaxLen = 16
-    static let protocolFamilies = [PF_INET]
-    static let protocolFamilyNames = ["PF_INET"]
-    static let socketTypes = [SOCK_DGRAM]
-    static let socketTypeNames = ["SOCK_DGRAM"]
-    static let protocols = [0, IPPROTO_ICMP, IPPROTO_UDP]
-    static let protocolNames = ["0", "IPPROTO_ICMP", "IPPROTO_UDP"]
+    static let protocolFamilies = [PF_INET, PF_UNIX]
+    static let protocolFamilyNames = ["PF_INET", "PF_UNIX"]
+    static let socketTypes = [SOCK_STREAM, SOCK_DGRAM]
+    static let socketTypeNames = ["SOCK_STREAM", "SOCK_DGRAM"]
+    static let protocols = [0, IPPROTO_TCP, IPPROTO_UDP, IPPROTO_ICMP]
+    static let protocolNames = ["0", "IPPROTO_TCP", "IPPROTO_UDP", "IPPROTO_ICMP"]
     static let eventBits = [POLLIN, POLLPRI, POLLOUT, POLLERR, POLLHUP, POLLNVAL]
     static let eventBitNames = ["POLLIN", "POLLPRI", "POLLOUT", "POLLERR", "POLLHUP", "POLLNVAL"]
+    static let msgFlagBits = [MSG_OOB, MSG_PEEK, MSG_DONTROUTE, MSG_EOR, MSG_TRUNC, MSG_CTRUNC, MSG_WAITALL, MSG_DONTWAIT, MSG_EOF, MSG_WAITSTREAM, MSG_FLUSH, MSG_HOLD, MSG_SEND, MSG_HAVEMORE, MSG_RCVMORE, MSG_NEEDSA, MSG_NOSIGNAL]
+    static let msgFlagBitNames = ["MSG_OOB", "MSG_PEEK", "MSG_DONTROUTE", "MSG_EOR", "MSG_TRUNC", "MSG_CTRUNC", "MSG_WAITALL", "MSG_DONTWAIT", "MSG_EOF", "MSG_WAITSTREAM", "MSG_FLUSH", "MSG_HOLD", "MSG_SEND", "MSG_HAVEMORE", "MSG_RCVMORE", "MSG_NEEDSA", "MSG_NOSIGNAL"]
+    static let fileFlagBits = [O_RDONLY, O_WRONLY, O_RDWR, O_ACCMODE, O_NONBLOCK, O_APPEND, O_SHLOCK, O_EXLOCK, O_ASYNC, O_FSYNC, O_NOFOLLOW, O_CREAT, O_TRUNC, O_EXCL, O_EVTONLY, O_NOCTTY, O_DIRECTORY, O_SYMLINK, O_CLOEXEC]
+    static let fileFlagBitNames = ["O_RDONLY", "O_WRONLY", "O_RDWR", "O_ACCMODE", "O_NONBLOCK", "O_APPEND", "O_SHLOCK", "O_EXLOCK", "O_ASYNC", "O_FSYNC", "O_NOFOLLOW", "O_CREAT", "O_TRUNC", "O_EXCL", "O_EVTONLY", "O_NOCTTY", "O_DIRECTORY", "O_SYMLINK", "O_CLOEXEC"]
     static let optvals = [IPOPT_EOL, IPOPT_NOP, IPOPT_RR, IPOPT_TS, IPOPT_SECURITY, IPOPT_LSRR, IPOPT_SATID, IPOPT_SSRR, IPOPT_RA]
     static let optvalNames = ["IPOPT_EOL", "IPOPT_NOP", "IPOPT_RR", "IPOPT_TS", "IPOPT_SECURITY", "IPOPT_LSRR", "IPOPT_SATID", "IPOPT_SSRR", "IPOPT_RA"]
+    static let howNames = ["SHUT_RD", "SHUT_WR", "SHUT_RDWR"]
+    static let tcpStateNames = ["CLOSED", "LISTEN", "SYN_SENT", "SYN_RECEIVED", "ESTABLISHED", "CLOSE_WAIT", "FIN_WAIT_1", "CLOSING", "LAST_ACK", "FIN_WAIT_2", "TIME_WAIT"]
     static let printableLetters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ "
     
     // Can be executed only from SocSocket.initSoc().
@@ -47,38 +54,38 @@ class SocLogger {
         dateFormatter.locale = Locale(identifier: "C")
         dateFormatter.timeZone = .current
         dateFormatter.dateFormat = "MMM dd, yyyy"
-        SocLogger.logBuffer = ""
-        SocLogger.logCount = 0
+        Self.logBuffer = ""
+        Self.logCount = 0
         isStopLog = false
     }
     
     static func enableDebug() {
-        SocLogger.isDebug = true
+        Self.isDebug = true
     }
     
     static func disableDebug() {
-        SocLogger.isDebug = false
+        Self.isDebug = false
     }
     
     static func setTraceLevel(_ level: Int) {
-        if traceLevel >= SocLogger.traceLevelNoData && traceLevel <= SocLogger.traceLevelHexDump {
-            SocLogger.traceLevel = level
+        if traceLevel >= Self.traceLevelNoData && traceLevel <= Self.traceLevelHexDump {
+            Self.traceLevel = level
         }
     }
     
     static func getLog() -> String {
-        return SocLogger.logBuffer
+        return Self.logBuffer
     }
     
     static func clearLog() {
-        SocLogger.logBuffer = ""
-        SocLogger.logCount = 0
-        SocLogger.isStopLog = false
-        SocLogger.push()
+        Self.logBuffer = ""
+        Self.logCount = 0
+        Self.isStopLog = false
+        Self.push()
     }
     
     static func getCount() -> Int {
-        return SocLogger.logCount
+        return Self.logCount
     }
     
     static func upCount() {
@@ -94,7 +101,7 @@ class SocLogger {
         if data.count == 0 {
             return "\"\""
         }
-        if SocLogger.traceLevel != SocLogger.traceLevelInLine {
+        if Self.traceLevel != Self.traceLevelInLine {
             return "<DATA>"
         }
         
@@ -106,7 +113,7 @@ class SocLogger {
                 dumpString += "\"..."
                 return dumpString
             }
-            dumpString += SocLogger.printableLetters.contains(bytes[index].char) ? String(format: "%c", bytes[index]) : "."
+            dumpString += Self.printableLetters.contains(bytes[index].char) ? String(format: "%c", bytes[index]) : "."
             index += 1
         }
         dumpString += "\""
@@ -117,12 +124,12 @@ class SocLogger {
         var maskString: String = ""
         var isAnySet: Bool = false
         
-        for i in 0 ..< SocLogger.eventBits.count {
-            if (events & SocLogger.eventBits[i]) == SocLogger.eventBits[i] {
+        for i in 0 ..< Self.eventBits.count {
+            if (events & Self.eventBits[i]) == Self.eventBits[i] {
                 if isAnySet {
                     maskString += "|"
                 }
-                maskString += SocLogger.eventBitNames[i]
+                maskString += Self.eventBitNames[i]
                 isAnySet = true
             }
         }
@@ -132,13 +139,42 @@ class SocLogger {
         return maskString
     }
     
+    static func getMsgFlagsMask(_ msgFlags: Int32) -> String {
+        var maskString: String = ""
+        for i in 0 ..< Self.msgFlagBits.count {
+            if (msgFlags & Self.msgFlagBits[i]) == Self.msgFlagBits[i] {
+                if !maskString.isEmpty {
+                    maskString += "|"
+                }
+                maskString += Self.msgFlagBitNames[i]
+            }
+        }
+        return maskString.isEmpty ? "0" : maskString
+    }
+    
+    static func getFileFlagsMask(fileFlags: Int32, isCheckRdOnly: Bool = false) -> String {
+        var maskString: String = ""
+        for i in 1 ..< Self.fileFlagBits.count {
+            if (fileFlags & Self.fileFlagBits[i]) == Self.fileFlagBits[i] {
+                if !maskString.isEmpty {
+                    maskString += "|"
+                }
+                maskString += Self.fileFlagBitNames[i]
+            }
+        }
+        if isCheckRdOnly {
+            return maskString.isEmpty ? fileFlagBitNames[0] : maskString
+        }
+        return maskString.isEmpty ? "0" : maskString
+    }
+    
     static func setResponse(_ start: Date) {
         let now = Date()
-        SocLogger.response = now.timeIntervalSince(start)
+        Self.response = now.timeIntervalSince(start)
     }
     
     static func getResponse() -> Double {
-        return SocLogger.response
+        return Self.response
     }
     
     // Internal log for LibSoc
@@ -148,16 +184,16 @@ class SocLogger {
             print(text)
         }
 #endif
-        SocLogger.logBuffer += SocLogger.timeFormatter.string(from: Date())
-        SocLogger.logBuffer += " "
-        SocLogger.logBuffer += SocLogger.dateFormatter.string(from: Date())
-        SocLogger.logBuffer += " - \(TimeZone.current)\n"
+        Self.logBuffer += Self.timeFormatter.string(from: Date())
+        Self.logBuffer += " "
+        Self.logBuffer += Self.dateFormatter.string(from: Date())
+        Self.logBuffer += " - \(TimeZone.current)\n"
         Self.upCount()
         if !text.isEmpty {
-            SocLogger.logBuffer += SocLogger.timeFormatter.string(from: Date())
-            SocLogger.logBuffer += " "
-            SocLogger.logBuffer += text
-            SocLogger.logBuffer += "\n"
+            Self.logBuffer += Self.timeFormatter.string(from: Date())
+            Self.logBuffer += " "
+            Self.logBuffer += text
+            Self.logBuffer += "\n"
             Self.upCount()
         }
     }
@@ -167,10 +203,10 @@ class SocLogger {
 #if DEBUG
         print("[ERROR] \(text)")
 #endif
-        SocLogger.logBuffer += SocLogger.timeFormatter.string(from: Date())
-        SocLogger.logBuffer += " [ERROR___] "
-        SocLogger.logBuffer += text
-        SocLogger.logBuffer += "\n"
+        Self.logBuffer += Self.timeFormatter.string(from: Date())
+        Self.logBuffer += " [ERROR___] "
+        Self.logBuffer += text
+        Self.logBuffer += "\n"
         Self.upCount()
     }
     
@@ -179,13 +215,13 @@ class SocLogger {
 #if DEBUG
         print("[DEBUG] \(text)")
 #endif
-        if SocLogger.isStopLog || !SocLogger.isDebug {
+        if Self.isStopLog || !Self.isDebug {
             return
         }
-        SocLogger.logBuffer += SocLogger.timeFormatter.string(from: Date())
-        SocLogger.logBuffer += " [--------] "
-        SocLogger.logBuffer += text
-        SocLogger.logBuffer += "\n"
+        Self.logBuffer += Self.timeFormatter.string(from: Date())
+        Self.logBuffer += " [--------] "
+        Self.logBuffer += text
+        Self.logBuffer += "\n"
         Self.upCount()
     }
     
@@ -193,29 +229,29 @@ class SocLogger {
         var text: String = ""
         text += "\(funcName)(\(argsText)) = \(retval)"
         if retval < 0 {
-            text += "  Err#\(errno) \(errnoNames[Int(errno)])"
+            text += "  Err#\(errno) \(ERRNO_NAMES[Int(errno)])"
         }
 #if DEBUG
         print(text)
 #endif
-        if SocLogger.isStopLog {
+        if Self.isStopLog {
             return
         }
-        SocLogger.logBuffer += SocLogger.timeFormatter.string(from: Date())
-        SocLogger.logBuffer += String(format: " [%.6f] ", SocLogger.response)
-        SocLogger.logBuffer += text
-        SocLogger.logBuffer += "\n"
+        Self.logBuffer += Self.timeFormatter.string(from: Date())
+        Self.logBuffer += String(format: " [%.6f] ", Self.response)
+        Self.logBuffer += text
+        Self.logBuffer += "\n"
         Self.upCount()
     }
     
     // Not output into console
     static func dataDump(data: Data, length: Int, label: String = "") {
-        if length == 0 || SocLogger.isStopLog || SocLogger.traceLevel < SocLogger.traceLevelHexDump {
+        if length == 0 || Self.isStopLog || Self.traceLevel < Self.traceLevelHexDump {
             return
         }
         if !label.isEmpty {
-            SocLogger.logBuffer += label
-            SocLogger.logBuffer += "\n"
+            Self.logBuffer += label
+            Self.logBuffer += "\n"
             Self.upCount()
         }
         var index: Int = 0
@@ -227,14 +263,14 @@ class SocLogger {
             dumpString = String(format: " %04d:  ", index)
             if index >= SocLogger.dumpMaxSize {
                 dumpString += "=== MORE ===\n"
-                SocLogger.logBuffer += dumpString
+                Self.logBuffer += dumpString
                 Self.upCount()
                 return
             }
             detailString = "    "
             while index < bytes.count && index < length {
                 dumpString += String(format: "%02x", bytes[index])
-                detailString += SocPingEcho.printableLetters.contains(bytes[index].char) ? String(format: "%c", bytes[index]) : "."
+                detailString += Self.printableLetters.contains(bytes[index].char) ? String(format: "%c", bytes[index]) : "."
                 index += 1
                 if index >= bytes.count || index >= length {
                     break
@@ -255,7 +291,7 @@ class SocLogger {
             }
             dumpString += detailString
             dumpString += "\n"
-            SocLogger.logBuffer += dumpString
+            Self.logBuffer += dumpString
             Self.upCount()
         }
     }
